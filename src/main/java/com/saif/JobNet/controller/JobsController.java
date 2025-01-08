@@ -2,6 +2,7 @@ package com.saif.JobNet.controller;
 
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.services.JobsEntryService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/jobs")
@@ -30,7 +32,7 @@ public class JobsController {
                         "message", noOfInsertedJobs+" new jobs inserted successfully",
                         "status", "success"
                 );
-                return ResponseEntity.status(HttpStatus.OK).body(response);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
     }
 
@@ -40,11 +42,12 @@ public class JobsController {
     }
 
     @GetMapping("id/{id}")
-    public ResponseWrapper getJobById(@PathVariable String id) {
-        System.out.println("id of the job: " + id);
-        return jobsEntryService.getJobById(id)
-                .map(job -> new ResponseWrapper(job, null))
-                .orElse(new ResponseWrapper(null, "No job found with ID: " + id));
+    public ResponseEntity<Job> getJobById(@PathVariable String id) {
+        Optional<Job> jobById = jobsEntryService.getJobById(id);
+        if(jobById.isPresent()){
+            return new ResponseEntity<>(jobById.get(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
     // Define a ResponseWrapper class in case id is invalid
     public static class ResponseWrapper {
