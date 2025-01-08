@@ -112,21 +112,4 @@ public class JobsController {
             return ResponseEntity.status(HttpStatus.METHOD_FAILURE).body(response);
         }
     }
-
-    @PostMapping("/upsert")
-    public ResponseEntity<String> upsertJob(@RequestBody Job job) {
-        Job result = jobsEntryService.upsertJobByTitle(job);
-        if (result == null) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("New job created successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body("Job updated successfully.");
-        }
-    }
-
-    @PostMapping("/reindex")
-    public ResponseEntity<String> reindexJobs() {
-        jobsEntryService.reindexJobsByTitle();
-        System.out.println("re indexed called");
-        return ResponseEntity.ok("Reindexing completed successfully.");
-    }
 }

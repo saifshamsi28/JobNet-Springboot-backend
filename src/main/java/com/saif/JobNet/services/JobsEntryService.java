@@ -21,25 +21,6 @@ import java.util.stream.Collectors;
 public class JobsEntryService {
     @Autowired
     private JobsEntryRepository jobsEntryRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
-
-    public Job upsertJobByTitle(Job job) {
-        Query query = new Query(Criteria.where("title").is(job.getTitle())); // Match by title
-        Update update = new Update()
-                .set("company", job.getCompany())
-                .set("location", job.getLocation())
-                .set("salary", job.getSalary())
-                .set("url", job.getUrl())
-                .set("rating", job.getRating())
-                .set("reviews", job.getReviews())
-                .set("post_date", job.getPostDate())
-                .set("description", job.getDescription())
-                .set("date", LocalDateTime.now()); // Update date
-        return mongoTemplate.findAndModify(query, update, Job.class, "jobs");
-    }
-
     public int insertJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsEntryRepository.findAll();
         for(Job job:jobs)
@@ -82,41 +63,5 @@ public class JobsEntryService {
         jobsEntryRepository.deleteAll();
         List<Job> jobs = jobsEntryRepository.findAll();
         return jobs.isEmpty();
-    }
-
-    public void reindexJobsByTitle() {
-        // Fetch all jobs
-        List<Job> allJobs = jobsEntryRepository.findAll();
-
-        // Group jobs by title
-        allJobs.stream()
-                .collect(Collectors.groupingBy(Job::getTitle))
-                .forEach((title, jobsWithSameTitle) -> {
-                    // Keep the first job as the primary entry and update others with reference
-                    Job primaryJob = jobsWithSameTitle.getFirst();
-
-                    // Create or update primary job
-                    Query query = new Query(Criteria.where("title").is(title));
-                    Update update = new Update()
-                            .set("company", primaryJob.getCompany())
-                            .set("location", primaryJob.getLocation())
-                            .set("salary", primaryJob.getSalary())
-                            .set("url", primaryJob.getUrl())
-                            .set("rating", primaryJob.getRating())
-                            .set("reviews", primaryJob.getReviews())
-                            .set("post_date", primaryJob.getPostDate())
-                            .set("description", primaryJob.getDescription())
-                            .set("date", primaryJob.getDate())
-                            .set("url", primaryJob.getUrl());
-                    mongoTemplate.upsert(query, update, Job.class);
-
-                    // Optional: Log duplicates or handle them as needed
-                    if (jobsWithSameTitle.size() > 1) {
-                        System.out.println("Duplicates found for title: " + title);
-                    }
-                });
-        mongoTemplate.getCollection("jobs").createIndex(new Document("title", 1));
-
-        System.out.println("Reindexing completed.");
     }
 }
