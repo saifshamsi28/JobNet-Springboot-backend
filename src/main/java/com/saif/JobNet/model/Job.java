@@ -2,17 +2,14 @@ package com.saif.JobNet.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Document(collection ="jobs")
-@Data //for automatic getter,setter,toString generator
+@Data //for automatic getter,setter,toString generation
 public class Job {
-
     @Id
     private String id;
 
