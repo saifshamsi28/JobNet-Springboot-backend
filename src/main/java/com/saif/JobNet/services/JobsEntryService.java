@@ -1,7 +1,7 @@
 package com.saif.JobNet.services;
 
 import com.saif.JobNet.model.Job;
-import com.saif.JobNet.repositories.JobsEntryRepository;
+import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @Component
 public class JobsEntryService {
     @Autowired
-    private JobsEntryRepository jobsEntryRepository;
+    private JobsRepository jobsEntryRepository;
     public int insertJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsEntryRepository.findAll();
         for(Job job:jobs)
