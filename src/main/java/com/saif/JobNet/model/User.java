@@ -1,6 +1,7 @@
 package com.saif.JobNet.model;
 
 import lombok.Data;
+import lombok.Generated;
 import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -14,7 +15,6 @@ import java.util.List;
 @Document(collection = "users")
 @Data
 public class User {
-    @Id
     private String id;
     @NonNull
     private String name;
@@ -22,6 +22,7 @@ public class User {
     @NonNull
     private String userName;
     @NonNull
+    @Indexed(unique = true)
     private String email;
     @NonNull
     private String password;
