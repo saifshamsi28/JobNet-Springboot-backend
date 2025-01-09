@@ -1,9 +1,7 @@
 package com.saif.JobNet.services;
 
 import com.saif.JobNet.model.User;
-import com.saif.JobNet.repositories.JobsRepository;
 import com.saif.JobNet.repositories.UserRepository;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -26,15 +24,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUserById(ObjectId id){
-        Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()){
-            return user.get();
-        }
-        return null;
+    public Optional<User> getUserById(String id){
+        return userRepository.findById(id);
     }
-
-    public void deleteUserById(ObjectId id){
+    public void deleteUserById(String id){
         userRepository.deleteById(id);
     }
 

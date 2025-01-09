@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/user")
@@ -23,10 +24,10 @@ public class UserController {
     }
 
     @GetMapping("id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable ObjectId id){
-        User user=userService.getUserById(id);
-        if(user!=null){
-            return new ResponseEntity<>(user,HttpStatus.OK);
+    public ResponseEntity<User> getUserById(@PathVariable String id){
+        Optional<User> user=userService.getUserById(id);
+        if(user.isPresent()){
+            return new ResponseEntity<>(user.get(),HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
@@ -39,13 +40,13 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<User> updateUser(@RequestBody User user){
-        User userBefore=userService.getUserById(user.getId());
+        Optional<User> userBefore=userService.getUserById(user.getId());
         userService.saveUser(user);
-        User userAfter =userService.getUserById(user.getId());
-        if(userService.checkUpdatedOrNot(userBefore,userAfter))
-            return new ResponseEntity<>(userAfter,HttpStatus.ACCEPTED);
+        Optional<User> userAfter =userService.getUserById(user.getId());
+        if(userService.checkUpdatedOrNot(userBefore.get(),userAfter.get()))
+            return new ResponseEntity<>(userAfter.get(),HttpStatus.ACCEPTED);
 
-        return new ResponseEntity<>(userAfter,HttpStatus.NOT_MODIFIED);
+        return new ResponseEntity<>(userAfter.get(),HttpStatus.NOT_MODIFIED);
     }
 
 }
