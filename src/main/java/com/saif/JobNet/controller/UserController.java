@@ -3,7 +3,9 @@ package com.saif.JobNet.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.saif.JobNet.UpdateUserRequest;
 import com.saif.JobNet.model.User;
+import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.UserService;
+import org.apache.juli.logging.Log;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping()
+    @GetMapping("all")
     public ResponseEntity<List<User>> getAllUsers(){
         return new ResponseEntity<>(userService.getAllUser(),HttpStatus.OK);
     }
@@ -36,8 +38,28 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
+        System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());
         userService.saveUser(user);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(user,HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> loginUser(@RequestBody UserLoginCredentials credentials) {
+        String userNameOrEmail = credentials.getUserNameOrEmail();
+        String password = credentials.getPassword();
+
+        System.out.println("username or email: "+credentials.getUserNameOrEmail());
+        System.out.println("password: "+credentials.getPassword());
+        Optional<User> userOpt = userService.getAllUser().stream()
+                .filter(user -> (user.getUserName().equals(userNameOrEmail) || user.getEmail().equals(userNameOrEmail))
+                        && user.getPassword().equals(password))
+                .findFirst();
+
+        if (userOpt.isPresent()) {
+            return new ResponseEntity<>(userOpt.get(), HttpStatus.OK); // Return user details
+        } else {
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED); // Invalid credentials
+        }
     }
 
     @PutMapping
