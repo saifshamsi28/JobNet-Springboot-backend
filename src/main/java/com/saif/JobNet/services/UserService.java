@@ -1,6 +1,7 @@
 package com.saif.JobNet.services;
 
 import com.saif.JobNet.model.User;
+import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,9 @@ public class UserService {
     }
 
 
+//    public Optional<User> checkCredentials(UserLoginCredentials credentials){
+//        if(userRepository.findBy(credentials.getUserNameOrEmail(),credentials.getPassword()));
+//    }
     public List<User> getAllUser(){
         return userRepository.findAll();
     }
