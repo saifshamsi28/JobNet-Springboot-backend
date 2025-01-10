@@ -1,12 +1,9 @@
 package com.saif.JobNet.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.saif.JobNet.UpdateUserRequest;
 import com.saif.JobNet.model.User;
 import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.UserService;
-import org.apache.juli.logging.Log;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
