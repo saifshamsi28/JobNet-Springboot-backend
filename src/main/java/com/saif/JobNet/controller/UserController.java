@@ -33,6 +33,14 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @PostMapping("username/{username}")
+    public ResponseEntity<Boolean> checkUserNameAvailable(@PathVariable String username) {
+        boolean available = userService.checkUserNameAvailable(username);
+        System.out.println("username: " + username + ", available: " + available);
+        return ResponseEntity.status(available ? HttpStatus.ACCEPTED : HttpStatus.NOT_ACCEPTABLE)
+                .body(available);
+    }
+
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
         System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());
@@ -93,11 +101,8 @@ public class UserController {
         }
 
         userService.saveUser(existingUser);
-
         return new ResponseEntity<>(existingUser, HttpStatus.OK);
     }
-
-
 
     @DeleteMapping("all")
     public ResponseEntity<?> deleteAllUsers(){
