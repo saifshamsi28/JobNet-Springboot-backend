@@ -45,12 +45,6 @@ public class UserService {
     }
 
     public boolean checkUserNameAvailable(String username){
-        List<User> users=userRepository.findAll();
-        for(User user:users){
-            if(user.getUserName().equals(username)){
-                return false;
-            }
-        }
-        return true;
+        return !userRepository.existsByUserName(username); //returning true if username not exist
     }
 }

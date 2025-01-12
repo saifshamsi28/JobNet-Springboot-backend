@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/jobs")
+@RequestMapping("/home")
 public class JobsController {
     @Autowired
     JobsEntryService jobsEntryService;
