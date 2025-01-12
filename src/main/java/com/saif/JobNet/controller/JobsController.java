@@ -48,34 +48,6 @@ public class JobsController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    // Define a ResponseWrapper class in case id is invalid
-    public static class ResponseWrapper {
-        private Job job;
-        private String error;
-
-        public ResponseWrapper(Job job, String error) {
-            this.job = job;
-            this.error = error;
-        }
-
-        // Getters and setters
-        public Job getJob() {
-            return job;
-        }
-
-        public void setJob(Job job) {
-            this.job = job;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-        }
-    }
-
 
     @DeleteMapping("id/{id}")
     public ResponseEntity<Map<String, String>> deleteJobById(@PathVariable String id) {
