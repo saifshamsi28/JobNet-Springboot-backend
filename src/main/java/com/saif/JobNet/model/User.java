@@ -15,6 +15,7 @@ import java.util.List;
 @Document(collection = "users")
 @Data
 public class User {
+    @Id
     private String id;
     @NonNull
     private String name;
