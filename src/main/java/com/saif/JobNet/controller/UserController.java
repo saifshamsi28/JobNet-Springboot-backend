@@ -37,7 +37,7 @@ public class UserController {
     public ResponseEntity<Boolean> checkUserNameAvailable(@PathVariable String username) {
         boolean available = userService.checkUserNameAvailable(username);
         System.out.println("username: " + username + ", available: " + available);
-        return ResponseEntity.status(available ? HttpStatus.ACCEPTED : HttpStatus.NOT_ACCEPTABLE)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(available);
     }
 
