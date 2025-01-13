@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -110,6 +112,34 @@ public class UserController {
 
         userService.saveUser(existingUser);
         return new ResponseEntity<>(existingUser, HttpStatus.OK);
+    }
+
+
+    @DeleteMapping("id/{id}")
+    public ResponseEntity<Map<String, Object>> deleteUserById(@PathVariable String id) {
+        Optional<User> userBox = userService.getUserById(id);
+
+        if (userBox.isPresent()) {
+            User user = userBox.get();
+            userService.deleteUserById(id);
+            Optional<User> isDeleted = userService.getUserById(id);
+
+            if (isDeleted.isPresent()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Failed to delete user");
+                response.put("user", user);
+                return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
+            } else {
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "User deleted successfully");
+                response.put("user", user);
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            }
+        } else {
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "No user is present with id: " + id);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("all")
