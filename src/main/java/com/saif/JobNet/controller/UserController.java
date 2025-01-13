@@ -41,6 +41,14 @@ public class UserController {
                 .body(available);
     }
 
+    @PostMapping("email/{email}")
+    public ResponseEntity<Boolean> checkEmailAlreadyExists(@PathVariable String email) {
+        boolean available = userService.checkEmailAlreadyExists(email);
+        System.out.println("email: " + email + ", available: " + available);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(available);
+    }
+
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
         System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());

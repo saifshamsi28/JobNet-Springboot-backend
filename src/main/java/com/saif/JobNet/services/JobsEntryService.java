@@ -30,13 +30,12 @@ public class JobsEntryService {
 
     //to get all jobs
     public List<Job> getAllJobs() {
-        List<Job> jobs = jobsEntryRepository.findAll();
-        for(Job job:jobs){
-            if(job!=null){
-                System.out.println(job);
-            }
-        }
-        return jobs;
+        //        for(Job job:jobs){
+//            if(job!=null){
+//                System.out.println(job);
+//            }
+//        }
+        return jobsEntryRepository.findAll();
     }
 
 
