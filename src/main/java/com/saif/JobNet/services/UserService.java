@@ -47,4 +47,8 @@ public class UserService {
     public boolean checkUserNameAvailable(String username){
         return !userRepository.existsByUserName(username); //returning true if username not exist
     }
+
+    public boolean checkEmailAlreadyExists(String email){
+        return !userRepository.existsByEmail(email); //returning true if email not exist
+    }
 }
