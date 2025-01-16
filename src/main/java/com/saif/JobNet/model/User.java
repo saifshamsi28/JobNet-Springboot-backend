@@ -29,5 +29,5 @@ public class User {
     private String password;
     private String phoneNumber;
     @DBRef
-    private List<Job> savedJobs=new ArrayList<>();
+    private List<String> savedJobs=new ArrayList<>();
 }
