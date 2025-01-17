@@ -13,5 +13,5 @@ public class UpdateUserRequest {
     private String email;
     private String password;
     private String phoneNumber;
-    private List<Job> savedJobs;
+    private List<String> savedJobs;
 }
