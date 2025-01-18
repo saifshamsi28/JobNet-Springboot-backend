@@ -5,6 +5,7 @@ import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.SaveJobsModel;
 import com.saif.JobNet.model.User;
 import com.saif.JobNet.model.UserLoginCredentials;
+import com.saif.JobNet.services.JobsEntryService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JobsEntryService jobsEntryService;
 
     @GetMapping("all")
     public ResponseEntity<List<User>> getAllUsers(){
@@ -105,9 +109,6 @@ public class UserController {
         if (updateRequest.getPhoneNumber() != null) {
             existingUser.setPhoneNumber(updateRequest.getPhoneNumber());
         }
-        if (updateRequest.getSavedJobs() != null) {
-            existingUser.setSavedJobs(updateRequest.getSavedJobs());
-        }
 
         userService.saveUser(existingUser);
         return new ResponseEntity<>(existingUser, HttpStatus.OK);
@@ -150,17 +151,20 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<?> getSavedJobsOfUser(@RequestBody SaveJobsModel saveJobsModel){
-        System.out.println("saving jobid: "+saveJobsModel.getJobId()+" to userid: "+saveJobsModel.getUserId());
-        Optional<User> user=userService.getUserById(saveJobsModel.getUserId());
-        if(user.isPresent()){
-            user.get().setSavedJobs(Collections.singletonList(saveJobsModel.getJobId()));
-            System.out.println("save job with id: "+saveJobsModel.getJobId()+" to the user: "+user.get().getName());
+    @PutMapping("/save-jobs")
+    public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
+        System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
+
+        Optional<User> user = userService.getUserById(saveJobsModel.getUserId());
+        Optional<Job> job = jobsEntryService.getJobById(saveJobsModel.getJobId());
+
+        if (user.isPresent() && job.isPresent()) {
+            user.get().addJobToUser(job.get());
             userService.saveUser(user.get());
-            return new ResponseEntity<>(user.get().getSavedJobs(),HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("No use found",HttpStatus.NOT_FOUND);
+            System.out.println("Saved job: " + job.get().getTitle() + " to user: " + user.get().getName());
+            return new ResponseEntity<>(user.get().getSavedJobs(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }
     }
 
