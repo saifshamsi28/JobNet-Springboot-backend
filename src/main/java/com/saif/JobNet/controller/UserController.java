@@ -1,6 +1,7 @@
 package com.saif.JobNet.controller;
 
 import com.saif.JobNet.UpdateUserRequest;
+import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.User;
 import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.UserService;
@@ -149,6 +150,16 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+    }
+
+    @GetMapping("/saved-jobs")
+    public ResponseEntity<?> getSavedJobsOfUser(@PathVariable String id){
+        Optional<User> user=userService.getUserById(id);
+        if(user.isPresent()){
+            return new ResponseEntity<>(user.get().getSavedJobs(),HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
 }
