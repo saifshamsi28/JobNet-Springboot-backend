@@ -29,5 +29,12 @@ public class User {
     private String password;
     private String phoneNumber;
     @DBRef
-    private List<String> savedJobs=new ArrayList<>();
+    private List<Job> savedJobs = new ArrayList<>();
+
+    public void addJobToUser(Job job) {
+        if (!savedJobs.contains(job)) {
+            savedJobs.add(job);
+        }
+    }
+
 }
