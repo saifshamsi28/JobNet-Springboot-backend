@@ -2,6 +2,7 @@ package com.saif.JobNet.controller;
 
 import com.saif.JobNet.UpdateUserRequest;
 import com.saif.JobNet.model.Job;
+import com.saif.JobNet.model.SaveJobsModel;
 import com.saif.JobNet.model.User;
 import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.UserService;
@@ -10,10 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/user")
@@ -152,13 +150,17 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
     }
 
-    @GetMapping("/saved-jobs")
-    public ResponseEntity<?> getSavedJobsOfUser(@PathVariable String id){
-        Optional<User> user=userService.getUserById(id);
+    @PutMapping("{id}")
+    public ResponseEntity<?> getSavedJobsOfUser(@RequestBody SaveJobsModel saveJobsModel){
+        System.out.println("saving jobid: "+saveJobsModel.getJobId()+" to userid: "+saveJobsModel.getUserId());
+        Optional<User> user=userService.getUserById(saveJobsModel.getUserId());
         if(user.isPresent()){
+            user.get().setSavedJobs(Collections.singletonList(saveJobsModel.getJobId()));
+            System.out.println("save job with id: "+saveJobsModel.getJobId()+" to the user: "+user.get().getName());
+            userService.saveUser(user.get());
             return new ResponseEntity<>(user.get().getSavedJobs(),HttpStatus.OK);
         }else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No use found",HttpStatus.NOT_FOUND);
         }
     }
 
