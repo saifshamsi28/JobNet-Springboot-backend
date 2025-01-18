@@ -155,6 +155,7 @@ public class UserController {
     public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
         System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
 
+
         Optional<User> user = userService.getUserById(saveJobsModel.getUserId());
         Optional<Job> job = jobsEntryService.getJobById(saveJobsModel.getJobId());
 
@@ -162,7 +163,7 @@ public class UserController {
             user.get().addJobToUser(job.get());
             userService.saveUser(user.get());
             System.out.println("Saved job: " + job.get().getTitle() + " to user: " + user.get().getName());
-            return new ResponseEntity<>(user.get().getSavedJobs(), HttpStatus.OK);
+            return new ResponseEntity<>(user.get(), HttpStatus.OK);
         } else {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }
