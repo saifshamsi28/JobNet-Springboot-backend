@@ -6,9 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Component
@@ -52,9 +56,35 @@ public class JobsEntryService {
         return false; // Indicate failure if the job does not exist
     }
 
-    public boolean deleteAllJobs(){
-        jobsEntryRepository.deleteAll();
+    public List<Job> deleteAllJobs() {
+        // Fetch all jobs
         List<Job> jobs = jobsEntryRepository.findAll();
-        return jobs.isEmpty();
+
+        // Filter jobs where job ID or URL is null, empty, or invalid
+        List<Job> jobsToDelete = jobs.stream()
+                .filter(job -> job.getId() == null || job.getId().isEmpty() || job.getUrl() == null || job.getUrl().isEmpty() || !isValidUrl(job.getUrl()))
+                .collect(Collectors.toList());
+
+        // Delete the jobs that meet the criteria
+        if (!jobsToDelete.isEmpty()) {
+            int previousSize=jobsEntryRepository.findAll().size();
+            jobsEntryRepository.deleteAll(jobsToDelete);
+            int afterSize=jobsEntryRepository.findAll().size();
+
+            return jobsToDelete;
+        }
+
+        return new ArrayList<>();
     }
+
+    // You can implement a simple URL validation method if necessary
+    private boolean isValidUrl(String url) {
+        try {
+            new URL(url);  // Attempt to create a URL object
+            return true;
+        } catch (MalformedURLException e) {
+            return false;  // Invalid URL
+        }
+    }
+
 }
