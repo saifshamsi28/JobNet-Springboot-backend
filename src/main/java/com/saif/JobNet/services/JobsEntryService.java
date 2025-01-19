@@ -3,8 +3,11 @@ package com.saif.JobNet.services;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 @Service
 @Component
 public class JobsEntryService {
+    private final String BASE_URL = "http://10.162.4.167:5000";
     @Autowired
     private JobsRepository jobsEntryRepository;
     public int insertJob(List<Job> jobs){
@@ -86,5 +90,33 @@ public class JobsEntryService {
             return false;  // Invalid URL
         }
     }
+
+    public String fetchJobDescriptionFromApi(String url) {
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            String jobDescription = restTemplate.getForObject(BASE_URL+url, String.class);
+            return jobDescription;
+        } catch (HttpClientErrorException e) {
+            // Handle error if URL is not valid or other issues occur
+            return null;
+        }
+    }
+    // This method will be periodically called to fetch job details
+//    @Scheduled(fixedRate = 60000) // Every minute, or adjust as needed
+//    public void fetchJobDetailsAndStore() {
+//        // Fetch all jobs with URL (your JobRepository should have this method)
+//        List<Job> jobsWithUrls = jobsEntryRepository.findJobsWithUrls();
+//
+//        for (Job job : jobsWithUrls) {
+//            // Fetch the job description from the API
+//            String jobDescription = fetchJobDescriptionFromApi(job.getUrl());
+//
+//            if (jobDescription != null) {
+//                // Store the job description in the job object (or a separate table)
+//                job.setJobDescription(jobDescription);
+//                jobRepository.save(job);  // Update the job entity with the description
+//            }
+//        }
+//    }
 
 }

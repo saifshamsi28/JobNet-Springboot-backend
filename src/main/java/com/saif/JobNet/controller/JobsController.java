@@ -17,6 +17,12 @@ public class JobsController {
     @Autowired
     JobsEntryService jobsEntryService;
 
+    @GetMapping
+    public List<Job> getAllJobs(){
+//        jobsEntryService.
+        return jobsEntryService.getAllJobs();
+    }
+
     @PostMapping
     public ResponseEntity<Map<String, String>> insertJob(@RequestBody List<Job> jobs){
             int noOfInsertedJobs=jobsEntryService.insertJob(jobs);
@@ -33,11 +39,6 @@ public class JobsController {
                 );
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
             }
-    }
-
-    @GetMapping
-    public List<Job> getAllJobs(){
-        return jobsEntryService.getAllJobs();
     }
 
     @GetMapping("id/{id}")
@@ -83,6 +84,16 @@ public class JobsController {
                     "status", "Failed"
             );
             return ResponseEntity.status(HttpStatus.METHOD_FAILURE).body(response);
+        }
+    }
+
+    @GetMapping("{url}")
+    public ResponseEntity<?> getFullJobDescription(@PathVariable String url){
+        String fullDescription=jobsEntryService.fetchJobDescriptionFromApi(url);
+        if(fullDescription.isEmpty()){
+            return new ResponseEntity<>(fullDescription,HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("No description found",HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data //for automatic getter,setter,toString generation
 public class Job {
     @Id
+    @JsonProperty("id")
     private String id;
 
     @JsonProperty("title")
@@ -25,7 +26,7 @@ public class Job {
     @JsonProperty("salary")
     private String salary;
 
-    @JsonProperty("url")
+    @JsonProperty("link")
     private String url;
 
     @JsonProperty("rating")
