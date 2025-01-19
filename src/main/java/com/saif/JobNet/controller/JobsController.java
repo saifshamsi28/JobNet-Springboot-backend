@@ -67,19 +67,19 @@ public class JobsController {
         }
     }
 
-    @DeleteMapping("deleteAll")
+    @DeleteMapping("delete-all")
     public ResponseEntity<Map<String, String>> deleteAllJobs(){
-        boolean isCleared=jobsEntryService.deleteAllJobs();
-        if(isCleared){
+        List<Job> deletedJobs=jobsEntryService.deleteAllJobs();
+        if(!deletedJobs.isEmpty()){
             Map<String, String> response = Map.of(
-                    "message", "Database cleared successfully",
-                    "note","All jobs details deleted from database",
+                    "message", deletedJobs.size()+" jobs deleted successfully",
+                    "deleted jobs", deletedJobs.toString(),
                     "status", "Success"
             );
             return ResponseEntity.status(HttpStatus.OK).body(response);
         }else {
             Map<String, String> response = Map.of(
-                    "message", "Database not cleared",
+                    "message", "Jobs not deleted",
                     "status", "Failed"
             );
             return ResponseEntity.status(HttpStatus.METHOD_FAILURE).body(response);
