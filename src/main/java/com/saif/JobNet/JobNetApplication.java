@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 public class JobNetApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(JobNetApplication.class, args);
+		System.out.println("HOST: " + System.getenv("HOST"));
+		System.out.println("PORT: " + System.getenv("PORT"));
+		System.out.println("DATABASE: " + System.getenv("DATABASE"));
 
 	}
 }
