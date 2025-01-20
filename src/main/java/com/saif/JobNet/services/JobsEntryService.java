@@ -3,6 +3,8 @@ package com.saif.JobNet.services;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +24,13 @@ import java.util.stream.Collectors;
 @Service
 @Component
 public class JobsEntryService {
-    private final String BASE_URL = "http://10.162.4.167:5000";
+    private final String BASE_URL = "http://10.162.1.53:5000";
     @Autowired
     private JobsRepository jobsEntryRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     public int insertJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsEntryRepository.findAll();
         for(Job job:jobs)
@@ -102,21 +110,34 @@ public class JobsEntryService {
         }
     }
     // This method will be periodically called to fetch job details
-//    @Scheduled(fixedRate = 60000) // Every minute, or adjust as needed
-//    public void fetchJobDetailsAndStore() {
-//        // Fetch all jobs with URL (your JobRepository should have this method)
-//        List<Job> jobsWithUrls = jobsEntryRepository.findJobsWithUrls();
-//
-//        for (Job job : jobsWithUrls) {
-//            // Fetch the job description from the API
-//            String jobDescription = fetchJobDescriptionFromApi(job.getUrl());
-//
-//            if (jobDescription != null) {
-//                // Store the job description in the job object (or a separate table)
-//                job.setJobDescription(jobDescription);
-//                jobRepository.save(job);  // Update the job entity with the description
-//            }
-//        }
-//    }
+    public String fetchJobDescriptionFromFlask(String url) {
+        try {
+            // Trim whitespace or newline characters from the input URL
+            url = url.trim();
+
+            // Construct the full Flask backend URL
+            String flaskEndpoint = BASE_URL + "/url?url=" + url;
+
+            System.out.println("Sending request to Flask backend: " + flaskEndpoint);
+
+            // Call Flask backend using RestTemplate
+            ResponseEntity<Job> response = restTemplate.getForEntity(flaskEndpoint, Job.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                if (response.getBody() != null) {
+                    System.out.println("Received description: " + response.getBody().getDescription());
+                    return response.getBody().getDescription(); // Job description from Flask
+                } else {
+                    return "No description found";
+                }
+            } else {
+                throw new RuntimeException("Failed to fetch job description from Flask backend");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error communicating with Flask backend: " + e.getMessage(), e);
+        }
+    }
+
+
 
 }
