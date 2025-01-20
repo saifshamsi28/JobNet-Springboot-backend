@@ -5,7 +5,6 @@ import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -13,8 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -102,8 +99,7 @@ public class JobsEntryService {
     public String fetchJobDescriptionFromApi(String url) {
         RestTemplate restTemplate = new RestTemplate();
         try {
-            String jobDescription = restTemplate.getForObject(BASE_URL+url, String.class);
-            return jobDescription;
+            return restTemplate.getForObject(BASE_URL+url, String.class);
         } catch (HttpClientErrorException e) {
             // Handle error if URL is not valid or other issues occur
             return null;
@@ -112,7 +108,6 @@ public class JobsEntryService {
     // This method will be periodically called to fetch job details
     public String fetchJobDescriptionFromFlask(String url) {
         try {
-            // Trim whitespace or newline characters from the input URL
             url = url.trim();
 
             // Construct the full Flask backend URL
@@ -137,7 +132,5 @@ public class JobsEntryService {
             throw new RuntimeException("Error communicating with Flask backend: " + e.getMessage(), e);
         }
     }
-
-
 
 }
