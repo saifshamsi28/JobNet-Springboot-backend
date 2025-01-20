@@ -3,13 +3,12 @@ package com.saif.JobNet.controller;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.services.JobsEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/home")
@@ -87,13 +86,30 @@ public class JobsController {
         }
     }
 
-    @GetMapping("{url}")
-    public ResponseEntity<?> getFullJobDescription(@PathVariable String url){
-        String fullDescription=jobsEntryService.fetchJobDescriptionFromApi(url);
-        if(fullDescription.isEmpty()){
-            return new ResponseEntity<>(fullDescription,HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("No description found",HttpStatus.NOT_FOUND);
+
+    @GetMapping("/jobs/description/{id}")
+    public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
+        try {
+            Optional<Job> jobById = jobsEntryService.getJobById(id);
+            if (jobById.isPresent()) {
+                Job job = jobById.get();
+
+                System.out.println("received request with url(in controller): \n"+url);
+
+                // Call Flask backend to fetch the description
+                String description = jobsEntryService.fetchJobDescriptionFromFlask(url);
+                System.out.println("desc in controller: \n"+description);
+
+                // Update the job description
+                job.setDescription(description);
+
+//                Map<String, String> response = new HashMap<>();
+//                response.put("description", description);
+                return new ResponseEntity<>(job,HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
