@@ -110,12 +110,12 @@ public class JobsEntryService {
             url = url.trim();
 
             // Construct the full Flask backend URL
-            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url="+ url;
+//            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url="+ url;
 
-            System.out.println("Sending request to Flask backend: " + flaskEndpoint);
+            System.out.println("Sending request to Flask url: " + url);
 
             // Call Flask backend using RestTemplate
-            ResponseEntity<Job> response = restTemplate.getForEntity(flaskEndpoint, Job.class);
+            ResponseEntity<Job> response = restTemplate.getForEntity(url, Job.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 if (response.getBody() != null) {
