@@ -110,7 +110,7 @@ public class JobsEntryService {
             url = url.trim();
 
             // Construct the full Flask backend URL
-            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url" + "?url=" + url;
+            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url="+ url;
 
             System.out.println("Sending request to Flask backend: " + flaskEndpoint);
 
