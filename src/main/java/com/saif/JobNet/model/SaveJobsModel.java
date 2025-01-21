@@ -6,4 +6,5 @@ import lombok.Data;
 public class SaveJobsModel {
     private String userId;
     private String jobId;
+    private boolean wantToSave;
 }
