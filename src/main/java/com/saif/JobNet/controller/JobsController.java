@@ -3,7 +3,6 @@ package com.saif.JobNet.controller;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.services.JobsEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.json.GsonJsonParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -85,7 +84,6 @@ public class JobsController {
             return ResponseEntity.status(HttpStatus.METHOD_FAILURE).body(response);
         }
     }
-
 
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
