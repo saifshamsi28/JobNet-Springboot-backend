@@ -114,7 +114,6 @@ public class UserController {
         return new ResponseEntity<>(existingUser, HttpStatus.OK);
     }
 
-
     @DeleteMapping("id/{id}")
     public ResponseEntity<Map<String, Object>> deleteUserById(@PathVariable String id) {
         Optional<User> userBox = userService.getUserById(id);
@@ -155,12 +154,11 @@ public class UserController {
     public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
         System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
 
-
         Optional<User> user = userService.getUserById(saveJobsModel.getUserId());
         Optional<Job> job = jobsEntryService.getJobById(saveJobsModel.getJobId());
 
         if (user.isPresent() && job.isPresent()) {
-            user.get().addJobToUser(job.get());
+            user.get().addOrRemoveJobToUser(job.get());
             userService.saveUser(user.get());
             System.out.println("Saved job: " + job.get().getTitle() + " to user: " + user.get().getName());
             return new ResponseEntity<>(user.get(), HttpStatus.OK);
@@ -168,5 +166,4 @@ public class UserController {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }
     }
-
 }
