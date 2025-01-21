@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Component
 public class JobsEntryService {
-    private final String BASE_URL = "http://10.162.1.53:5000";
+    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
     @Autowired
     private JobsRepository jobsEntryRepository;
 
