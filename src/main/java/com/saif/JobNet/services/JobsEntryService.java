@@ -17,11 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 @Service
 @Component
 public class JobsEntryService {
-    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
+//    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
+
+//    private static final String FLASK_BASE_URL;
+
+//    static {
+//        // Load the .env file
+//        Dotenv dotenv = Dotenv.load();
+//        // Get the FLASK_BASE_URL value from the .env file
+//        FLASK_BASE_URL = dotenv.get("FLASK_BASE_URL");
+//    }
     @Autowired
     private JobsRepository jobsEntryRepository;
 
@@ -96,22 +104,13 @@ public class JobsEntryService {
         }
     }
 
-    public String fetchJobDescriptionFromApi(String url) {
-        RestTemplate restTemplate = new RestTemplate();
-        try {
-            return restTemplate.getForObject(BASE_URL+url, String.class);
-        } catch (HttpClientErrorException e) {
-            // Handle error if URL is not valid or other issues occur
-            return null;
-        }
-    }
     // This method will be periodically called to fetch job details
     public String fetchJobDescriptionFromFlask(String url) {
         try {
             url = url.trim();
 
             // Construct the full Flask backend URL
-            String flaskEndpoint = BASE_URL + "/url?url=" + url;
+            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url" + "?url=" + url;
 
             System.out.println("Sending request to Flask backend: " + flaskEndpoint);
 
