@@ -162,6 +162,7 @@ public class UserController {
             user.get().addOrRemoveJobToUser(job.get());
             List<Job> savedAfter=user.get().getSavedJobs();
             if(savedBefore.size()==savedAfter.size()){
+                //checking updated or not
                 if(saveJobsModel.isWantToSave()){
                     return new ResponseEntity<>("failed to save job ,jobid: "+job.get().getId()+" ,title: "+job.get().getTitle(),HttpStatus.INTERNAL_SERVER_ERROR);
                 }else {
