@@ -31,9 +31,11 @@ public class User {
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();
 
-    public void addJobToUser(Job job) {
+    public void addOrRemoveJobToUser(Job job) {
         if (!savedJobs.contains(job)) {
             savedJobs.add(job);
+        }else {
+            savedJobs.remove(job);
         }
     }
 
