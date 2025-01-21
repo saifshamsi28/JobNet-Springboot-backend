@@ -158,10 +158,19 @@ public class UserController {
         Optional<Job> job = jobsEntryService.getJobById(saveJobsModel.getJobId());
 
         if (user.isPresent() && job.isPresent()) {
+            List<Job> savedBefore=user.get().getSavedJobs();
             user.get().addOrRemoveJobToUser(job.get());
-            userService.saveUser(user.get());
-            System.out.println("Saved job: " + job.get().getTitle() + " to user: " + user.get().getName());
-            return new ResponseEntity<>(user.get(), HttpStatus.OK);
+            List<Job> savedAfter=user.get().getSavedJobs();
+            if(savedBefore.size()==savedAfter.size()){
+                if(saveJobsModel.isWantToSave()){
+                    return new ResponseEntity<>("failed to save job ,jobid: "+job.get().getId()+" ,title: "+job.get().getTitle(),HttpStatus.INTERNAL_SERVER_ERROR);
+                }else {
+                    return new ResponseEntity<>("failed to remove job ,jobid: "+job.get().getId()+" ,title: "+job.get().getTitle(),HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }else{
+                userService.saveUser(user.get());
+                return new ResponseEntity<>(user.get(), HttpStatus.OK);
+            }
         } else {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }

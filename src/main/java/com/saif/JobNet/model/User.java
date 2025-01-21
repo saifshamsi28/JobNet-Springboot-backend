@@ -34,8 +34,10 @@ public class User {
     public void addOrRemoveJobToUser(Job job) {
         if (!savedJobs.contains(job)) {
             savedJobs.add(job);
+            System.out.println("adding the job: "+job.getId()+" , title: "+job.getTitle());
         }else {
             savedJobs.remove(job);
+            System.out.println("removing the job: "+job.getId()+" , title: "+job.getTitle());
         }
     }
 
