@@ -17,13 +17,13 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        System.out.println("mongo uri: "+mongoUri);
+//        System.out.println("mongo uri: "+mongoUri);
         return "JobNetDatabaseFirstCluster"; // Specify your MongoDB database name
     }
 
     @Override
     public com.mongodb.client.MongoClient mongoClient() {
-        System.out.println("mongo uri: "+mongoUri);
+//        System.out.println("mongo uri: "+mongoUri);
         return MongoClients.create(mongoUri); // Replace with your MongoDB URI
     }
 
