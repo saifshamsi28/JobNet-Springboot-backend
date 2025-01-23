@@ -152,28 +152,44 @@ public class UserController {
 
     @PutMapping("/save-jobs")
     public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
-        System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
+//        System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
 
-        Optional<User> user = userService.getUserById(saveJobsModel.getUserId());
-        Optional<Job> job = jobsEntryService.getJobById(saveJobsModel.getJobId());
+        Optional<User> userOptional = userService.getUserById(saveJobsModel.getUserId());
+        Optional<Job> jobOptional = jobsEntryService.getJobById(saveJobsModel.getJobId());
 
-        if (user.isPresent() && job.isPresent()) {
-            List<Job> savedBefore=user.get().getSavedJobs();
-            user.get().addOrRemoveJobToUser(job.get());
-            List<Job> savedAfter=user.get().getSavedJobs();
-            if(savedBefore.size()==savedAfter.size()){
-                //checking updated or not
-                if(saveJobsModel.isWantToSave()){
-                    return new ResponseEntity<>("failed to save job ,jobid: "+job.get().getId()+" ,title: "+job.get().getTitle(),HttpStatus.INTERNAL_SERVER_ERROR);
-                }else {
-                    return new ResponseEntity<>("failed to remove job ,jobid: "+job.get().getId()+" ,title: "+job.get().getTitle(),HttpStatus.INTERNAL_SERVER_ERROR);
+        if (userOptional.isPresent() && jobOptional.isPresent()) {
+            User user = userOptional.get();
+            Job job = jobOptional.get();
+
+            // Resolve savedJobs if using DBRef
+            user.getSavedJobs().size(); // Force lazy-loading
+
+            List<Job> savedBefore = new ArrayList<>(user.getSavedJobs());
+            user.addOrRemoveJobToUser(job);
+            List<Job> savedAfter = new ArrayList<>(user.getSavedJobs());
+
+            System.out.println("Saved jobs length: " + savedBefore.size() + "\nSaved jobs after: " + savedAfter.size());
+
+            if (savedBefore.size() == savedAfter.size()) {
+                if (saveJobsModel.isWantToSave()) {
+                    System.out.println("Failed to save job, jobid: " + job.getId() + " , title: " + job.getTitle());
+                    return new ResponseEntity<>("Failed to save job, jobid: " + job.getId() + " , title: " + job.getTitle(), HttpStatus.INTERNAL_SERVER_ERROR);
+                } else {
+                    System.out.println("Failed to remove job, jobid: " + job.getId() + " , title: " + job.getTitle());
+                    return new ResponseEntity<>("Failed to remove job, jobid: " + job.getId() + " , title: " + job.getTitle(), HttpStatus.INTERNAL_SERVER_ERROR);
                 }
-            }else{
-                userService.saveUser(user.get());
-                return new ResponseEntity<>(user.get(), HttpStatus.OK);
+            } else {
+                userService.saveUser(user); // Persist changes to the database
+                if(saveJobsModel.isWantToSave()){
+                    return new ResponseEntity<>("successfully saved the job : "+job.getId() + " , title: " + job.getTitle(), HttpStatus.OK);
+                }else {
+                    return new ResponseEntity<>("successfully removed the job : "+job.getId() + " , title: " + job.getTitle(), HttpStatus.OK);
+                }
+
             }
         } else {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }
     }
+
 }

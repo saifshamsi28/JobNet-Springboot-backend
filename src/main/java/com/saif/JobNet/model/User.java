@@ -32,12 +32,21 @@ public class User {
     private List<Job> savedJobs = new ArrayList<>();
 
     public void addOrRemoveJobToUser(Job job) {
-        if (!savedJobs.contains(job)) {
+        boolean found = false;
+
+        // Iterate through the saved jobs and compare by ID
+        for (Job savedJob : savedJobs) {
+            if (savedJob.getId().equals(job.getId())) {
+                savedJobs.remove(savedJob);
+                System.out.println("Removing the job: " + job.getId() + " , title: " + job.getTitle());
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
             savedJobs.add(job);
-            System.out.println("adding the job: "+job.getId()+" , title: "+job.getTitle());
-        }else {
-            savedJobs.remove(job);
-            System.out.println("removing the job: "+job.getId()+" , title: "+job.getTitle());
+            System.out.println("Adding the job: " + job.getId() + " , title: " + job.getTitle());
         }
     }
 
