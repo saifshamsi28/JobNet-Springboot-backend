@@ -15,6 +15,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 @Service
@@ -103,24 +104,23 @@ public class JobsEntryService {
             return false;  // Invalid URL
         }
     }
-
-    // This method will be periodically called to fetch job details
     public String fetchJobDescriptionFromFlask(String url) {
         try {
             url = url.trim();
 
             // Construct the full Flask backend URL
-            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url="+ url;
+            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url=" + url;
 
             System.out.println("Sending request to Flask url: " + flaskEndpoint);
 
             // Call Flask backend using RestTemplate
-            ResponseEntity<Job> response = restTemplate.getForEntity(flaskEndpoint, Job.class);
+            ResponseEntity<Map> response = restTemplate.getForEntity(flaskEndpoint, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                if (response.getBody() != null) {
-                    System.out.println("Received description: " + response.getBody().getDescription());
-                    return response.getBody().getDescription(); // Job description from Flask
+                Map<String, Object> responseBody = response.getBody();
+                if (responseBody != null && responseBody.containsKey("description")) {
+                    System.out.println("Received description: " + responseBody.get("description"));
+                    return (String) responseBody.get("description");
                 } else {
                     return "No description found";
                 }
@@ -131,4 +131,5 @@ public class JobsEntryService {
             throw new RuntimeException("Error communicating with Flask backend: " + e.getMessage(), e);
         }
     }
+
 }
