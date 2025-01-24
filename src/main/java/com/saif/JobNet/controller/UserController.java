@@ -1,6 +1,6 @@
 package com.saif.JobNet.controller;
 
-import com.saif.JobNet.UpdateUserRequest;
+import com.saif.JobNet.model.UpdateUserRequest;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.SaveJobsModel;
 import com.saif.JobNet.model.User;

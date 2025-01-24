@@ -1,4 +1,4 @@
-package com.saif.JobNet;
+package com.saif.JobNet.config;
 
 import com.mongodb.client.MongoClients;
 import lombok.NonNull;
