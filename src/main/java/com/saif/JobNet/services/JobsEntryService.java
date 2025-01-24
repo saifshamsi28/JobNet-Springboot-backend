@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
@@ -22,15 +21,6 @@ import java.util.stream.Collectors;
 @Component
 public class JobsEntryService {
 //    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
-
-//    private static final String FLASK_BASE_URL;
-
-//    static {
-//        // Load the .env file
-//        Dotenv dotenv = Dotenv.load();
-//        // Get the FLASK_BASE_URL value from the .env file
-//        FLASK_BASE_URL = dotenv.get("FLASK_BASE_URL");
-//    }
     @Autowired
     private JobsRepository jobsEntryRepository;
 
@@ -52,11 +42,6 @@ public class JobsEntryService {
 
     //to get all jobs
     public List<Job> getAllJobs() {
-        //        for(Job job:jobs){
-//            if(job!=null){
-//                System.out.println(job);
-//            }
-//        }
         return jobsEntryRepository.findAll();
     }
 
