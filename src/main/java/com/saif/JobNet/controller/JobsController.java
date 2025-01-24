@@ -101,8 +101,6 @@ public class JobsController {
                 // Update the job description
                 job.setDescription(description);
 
-//                Map<String, String> response = new HashMap<>();
-//                response.put("description", description);
                 return new ResponseEntity<>(job,HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

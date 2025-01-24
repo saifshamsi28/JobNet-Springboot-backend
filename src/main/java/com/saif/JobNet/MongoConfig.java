@@ -1,6 +1,7 @@
 package com.saif.JobNet;
 
 import com.mongodb.client.MongoClients;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,14 +17,14 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     private String mongoUri;
 
     @Override
+    @NonNull
     protected String getDatabaseName() {
-//        System.out.println("mongo uri: "+mongoUri);
         return "JobNetDatabaseFirstCluster"; // Specify your MongoDB database name
     }
 
     @Override
+    @NonNull
     public com.mongodb.client.MongoClient mongoClient() {
-//        System.out.println("mongo uri: "+mongoUri);
         return MongoClients.create(mongoUri); // Replace with your MongoDB URI
     }
 

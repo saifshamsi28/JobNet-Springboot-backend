@@ -152,7 +152,6 @@ public class UserController {
 
     @PutMapping("/save-jobs")
     public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
-//        System.out.println("Saving job ID: " + saveJobsModel.getJobId() + " to user ID: " + saveJobsModel.getUserId());
 
         Optional<User> userOptional = userService.getUserById(saveJobsModel.getUserId());
         Optional<Job> jobOptional = jobsEntryService.getJobById(saveJobsModel.getJobId());
