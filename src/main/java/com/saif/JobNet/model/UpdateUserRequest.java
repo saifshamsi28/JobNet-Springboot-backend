@@ -1,6 +1,5 @@
-package com.saif.JobNet;
+package com.saif.JobNet.model;
 
-import com.saif.JobNet.model.Job;
 import lombok.Data;
 
 import java.util.List;
