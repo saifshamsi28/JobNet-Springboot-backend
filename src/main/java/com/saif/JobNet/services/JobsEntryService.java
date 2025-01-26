@@ -93,27 +93,35 @@ public class JobsEntryService {
         try {
             url = url.trim();
 
-            // Construct the full Flask backend URL
+            // Construct the Flask backend URL
             String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url=" + url;
 
-            System.out.println("Sending request to Flask url: " + flaskEndpoint);
+            System.out.println("Sending request to Flask: " + flaskEndpoint);
 
             // Call Flask backend using RestTemplate
             ResponseEntity<Map> response = restTemplate.getForEntity(flaskEndpoint, Map.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
-                if (responseBody != null && responseBody.containsKey("description")) {
-                    System.out.println("Received description: " + responseBody.get("description"));
-                    return (String) responseBody.get("description");
+                if (responseBody != null) {
+                    if (responseBody.containsKey("description")) {
+                        return (String) responseBody.get("description");
+                    } else if (responseBody.containsKey("error")) {
+                        return "Error from Flask: " + responseBody.get("error");
+                    } else {
+                        return "Unexpected response from Flask.";
+                    }
                 } else {
-                    return "No description found";
+                    return "Empty response from Flask.";
                 }
             } else {
-                throw new RuntimeException("Failed to fetch job description from Flask backend");
+                throw new RuntimeException("Failed to fetch job description from Flask: " +
+                        response.getStatusCodeValue());
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error communicating with Flask backend: " + e.getMessage(), e);
+            // Handle exceptions gracefully
+            System.err.println("Error communicating with Flask backend: " + e.getMessage());
+            return "Unable to fetch job description due to a backend issue.";
         }
     }
 
