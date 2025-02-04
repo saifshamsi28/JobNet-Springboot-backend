@@ -1,5 +1,6 @@
 package com.saif.JobNet.controller;
 
+import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.services.JobsEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,10 +48,18 @@ public class JobsController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping("jobs")
-    public List<Job> getJobByTitle(@RequestParam String title){
-        System.out.println("request jobs for: "+title);
-        return jobsEntryService.getJobByTitle(title);
+    @GetMapping("/jobs")
+    public ResponseEntity<?> getJobByTitle(@RequestParam String title) {
+        try {
+            List<Job> jobs = jobsEntryService.getJobByTitle(title);
+            return ResponseEntity.ok(jobs);
+        } catch (JobNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Something went wrong!"));
+        }
     }
 
     @DeleteMapping("id/{id}")
