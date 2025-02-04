@@ -1,5 +1,6 @@
 package com.saif.JobNet.services;
 
+import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +23,17 @@ import java.util.stream.Collectors;
 public class JobsEntryService {
 //    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
     @Autowired
-    private JobsRepository jobsEntryRepository;
+    private JobsRepository jobsRepository;
 
     @Autowired
     private RestTemplate restTemplate;
 
     public int insertJob(List<Job> jobs){
-        List<Job> jobsBeforeInsertedNewJobs = jobsEntryRepository.findAll();
+        List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
         for(Job job:jobs)
             job.setDate(LocalDateTime.now());
-        jobsEntryRepository.saveAll(jobs);
-        List<Job> jobsAfterInsertedNewJobs = jobsEntryRepository.findAll();
+        jobsRepository.saveAll(jobs);
+        List<Job> jobsAfterInsertedNewJobs = jobsRepository.findAll();
         if(jobsBeforeInsertedNewJobs.size()!=jobsAfterInsertedNewJobs.size()){
             return  jobsAfterInsertedNewJobs.size()-jobsBeforeInsertedNewJobs.size();
         }else {
@@ -42,18 +43,18 @@ public class JobsEntryService {
 
     //to get all jobs
     public List<Job> getAllJobs() {
-        return jobsEntryRepository.findAll();
+        return jobsRepository.findAll();
     }
 
 
     //to get specific job
     public Optional<Job> getJobById(String id){
-        return jobsEntryRepository.findById(id);
+        return jobsRepository.findById(id);
     }
 
     public boolean deleteJobById(String id) {
-        if (jobsEntryRepository.existsById(id)) { // Check if the job exists
-            jobsEntryRepository.deleteById(id);   // Perform the deletion
+        if (jobsRepository.existsById(id)) { // Check if the job exists
+            jobsRepository.deleteById(id);   // Perform the deletion
             return true;                          // Indicate successful deletion
         }
         return false; // Indicate failure if the job does not exist
@@ -61,7 +62,7 @@ public class JobsEntryService {
 
     public List<Job> deleteAllJobs() {
         // Fetch all jobs
-        List<Job> jobs = jobsEntryRepository.findAll();
+        List<Job> jobs = jobsRepository.findAll();
 
         // Filter jobs where job ID or URL is null, empty, or invalid
         List<Job> jobsToDelete = jobs.stream()
@@ -70,9 +71,9 @@ public class JobsEntryService {
 
         // Delete the jobs that meet the criteria
         if (!jobsToDelete.isEmpty()) {
-            int previousSize=jobsEntryRepository.findAll().size();
-            jobsEntryRepository.deleteAll(jobsToDelete);
-            int afterSize=jobsEntryRepository.findAll().size();
+            int previousSize= jobsRepository.findAll().size();
+            jobsRepository.deleteAll(jobsToDelete);
+            int afterSize= jobsRepository.findAll().size();
 
             return jobsToDelete;
         }
@@ -126,6 +127,10 @@ public class JobsEntryService {
     }
 
     public List<Job> getJobByTitle(String title) {
-        return jobsEntryRepository.getJobByTitle(title);
+        List<Job> jobs = jobsRepository.searchJobsByTitleOrDescription(title);
+        if (jobs.isEmpty()) {
+            throw new JobNotFoundException("No jobs found for: " + title);
+        }
+        return jobs;
     }
 }
