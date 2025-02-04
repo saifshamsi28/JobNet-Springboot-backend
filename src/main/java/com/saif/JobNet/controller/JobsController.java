@@ -49,9 +49,15 @@ public class JobsController {
     }
 
     @GetMapping("/jobs")
-    public ResponseEntity<?> getJobByTitle(@RequestParam String title) {
+    public ResponseEntity<?> getJobsByFilters(
+            @RequestParam String title, // Required parameter
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String company,
+            @RequestParam(required = false) Integer minSalary,
+            @RequestParam(required = false) String jobType) {
+
         try {
-            List<Job> jobs = jobsEntryService.getJobByTitle(title);
+            List<Job> jobs = jobsEntryService.getJobsByFilters(title, location, company, minSalary, jobType);
             return ResponseEntity.ok(jobs);
         } catch (JobNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -61,6 +67,7 @@ public class JobsController {
                     .body(Collections.singletonMap("error", "Something went wrong!"));
         }
     }
+
 
     @DeleteMapping("id/{id}")
     public ResponseEntity<Map<String, String>> deleteJobById(@PathVariable String id) {
