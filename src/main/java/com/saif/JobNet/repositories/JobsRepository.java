@@ -1,10 +1,18 @@
 package com.saif.JobNet.repositories;
 
 import com.saif.JobNet.model.Job;
+import org.springframework.data.domain.Example;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.query.FluentQuery;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.function.Function;
 
 @Repository
 public interface JobsRepository extends MongoRepository<Job,String> {
+    List<Job> getJobByTitle(String title);
 
+//    @Override
+//    <S extends Job, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 }

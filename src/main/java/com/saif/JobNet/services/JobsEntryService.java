@@ -125,4 +125,7 @@ public class JobsEntryService {
         }
     }
 
+    public List<Job> getJobByTitle(String title) {
+        return jobsEntryRepository.getJobByTitle(title);
+    }
 }
