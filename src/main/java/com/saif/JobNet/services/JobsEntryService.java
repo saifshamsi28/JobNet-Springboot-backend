@@ -126,10 +126,21 @@ public class JobsEntryService {
         }
     }
 
-    public List<Job> getJobByTitle(String title) {
-        List<Job> jobs = jobsRepository.searchJobsByTitleOrDescription(title);
+    public List<Job> getJobsByFilters(String title, String location, String company, Integer minSalary, String jobType) {
+        if (title == null || title.isEmpty()) {
+            throw new IllegalArgumentException("Title is required!");
+        }
+
+        // Handle optional filters (default values for nulls)
+        location = (location == null) ? "" : location;
+        company = (company == null) ? "" : company;
+        minSalary = (minSalary == null) ? 0 : minSalary; // Default: 0 salary filter
+        jobType = (jobType == null) ? "" : jobType;
+
+        List<Job> jobs = jobsRepository.searchJobsByFilters(title, location, company, minSalary, jobType);
+
         if (jobs.isEmpty()) {
-            throw new JobNotFoundException("No jobs found for: " + title);
+            throw new JobNotFoundException("No jobs found for the given filters.");
         }
         return jobs;
     }
