@@ -184,7 +184,6 @@ public class UserController {
                 }else {
                     return new ResponseEntity<>("successfully removed the job : "+job.getId() + " , title: " + job.getTitle(), HttpStatus.OK);
                 }
-
             }
         } else {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);

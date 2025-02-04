@@ -1,9 +1,7 @@
 package com.saif.JobNet.model;
 
 import lombok.Data;
-import lombok.Generated;
 import lombok.NonNull;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
