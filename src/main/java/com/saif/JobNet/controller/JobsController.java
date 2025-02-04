@@ -47,6 +47,12 @@ public class JobsController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping("jobs")
+    public List<Job> getJobByTitle(@RequestParam String title){
+        System.out.println("request jobs for: "+title);
+        return jobsEntryService.getJobByTitle(title);
+    }
+
     @DeleteMapping("id/{id}")
     public ResponseEntity<Map<String, String>> deleteJobById(@PathVariable String id) {
         boolean isDeleted = jobsEntryService.deleteJobById(id);
