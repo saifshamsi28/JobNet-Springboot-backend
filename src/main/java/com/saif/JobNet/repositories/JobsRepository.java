@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.function.Function;
 
 @Repository
-public interface JobsRepository extends MongoRepository<Job,String> {
+public interface JobsRepository extends MongoRepository<Job, String> {
     @Query("{ 'title': { $regex: ?0, $options: 'i' }, " +
             "'minSalary': { $gte: ?1 }, " +
-            "'location': { $regex: ?3, $options: 'i' }, " +
-            "'company': { $regex: ?4, $options: 'i' } }")
-    List<Job> findJobsByFilters(String title, String location, Integer minSalary, String company);
+            "'location': { $regex: ?2, $options: 'i' }, " +
+            "'company': { $regex: ?3, $options: 'i' } }")
+    List<Job> findJobsByFilters(String title, Integer minSalary, String location, String company);
 }
-//    @Override
-//    <S extends Job, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
 
