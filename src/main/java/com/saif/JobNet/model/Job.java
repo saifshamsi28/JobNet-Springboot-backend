@@ -27,8 +27,10 @@ public class Job {
     @JsonProperty("salary")
     private String salary;
 
+    @JsonProperty("minSalary")
     private long minSalary;
 
+    @JsonProperty("maxSalary")
     private long maxSalary;
 
     @JsonProperty("link")
