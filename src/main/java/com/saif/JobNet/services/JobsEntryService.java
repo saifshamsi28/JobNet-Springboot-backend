@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 @Service
 @Component
@@ -30,8 +32,12 @@ public class JobsEntryService {
 
     public int insertJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
-        for(Job job:jobs)
+        for(Job job:jobs) {
             job.setDate(LocalDateTime.now());
+            int[] salaryRange = parseSalary(job.getSalary());
+            job.setMinSalary(salaryRange[0]);
+            job.setMaxSalary(salaryRange[1]);
+        }
         jobsRepository.saveAll(jobs);
         List<Job> jobsAfterInsertedNewJobs = jobsRepository.findAll();
         if(jobsBeforeInsertedNewJobs.size()!=jobsAfterInsertedNewJobs.size()){
@@ -137,11 +143,25 @@ public class JobsEntryService {
         minSalary = (minSalary == null) ? 0 : minSalary; // Default: 0 salary filter
         jobType = (jobType == null) ? "" : jobType;
 
-        List<Job> jobs = jobsRepository.searchJobsByFilters(title, location, company, minSalary, jobType);
+        List<Job> jobs = jobsRepository.findJobsByFilters(title, location, minSalary,company);
 
         if (jobs.isEmpty()) {
-            throw new JobNotFoundException("No jobs found for the given filters.");
+            throw new JobNotFoundException("No jobs found for the given preferences.");
         }
         return jobs;
+    }
+
+    // Function to parse salary string into min and max salary
+    private int[] parseSalary(String salary) {
+        Pattern pattern = Pattern.compile("(\\d+)-(\\d+)");
+        Matcher matcher = pattern.matcher(salary);
+
+        if (matcher.find()) {
+            int min = Integer.parseInt(matcher.group(1)) * 100000; // Convert to integer in Lacs
+            int max = Integer.parseInt(matcher.group(2)) * 100000; // Convert to integer in Lacs
+            return new int[]{min, max};
+        }
+
+        return new int[]{0, 0}; // Default if parsing fails
     }
 }
