@@ -2,7 +2,7 @@ package com.saif.JobNet.controller;
 
 import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
-import com.saif.JobNet.services.JobsEntryService;
+import com.saif.JobNet.services.JobsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +13,17 @@ import java.util.*;
 @RequestMapping("/home")
 public class JobsController {
     @Autowired
-    JobsEntryService jobsEntryService;
+    JobsService jobsService;
 
     @GetMapping
     public List<Job> getAllJobs(){
-//        jobsEntryService.
-        return jobsEntryService.getAllJobs();
+//        jobsService.
+        return jobsService.getAllJobs();
     }
 
     @PostMapping
     public ResponseEntity<Map<String, String>> insertJob(@RequestBody List<Job> jobs){
-            int noOfInsertedJobs=jobsEntryService.insertJob(jobs);
+            int noOfInsertedJobs=jobsService.insertJob(jobs);
             if(noOfInsertedJobs==0){
                 Map<String, String> response = Map.of(
                         "message", "New jobs not inserted",
@@ -41,7 +41,7 @@ public class JobsController {
 
     @GetMapping("id/{id}")
     public ResponseEntity<Job> getJobById(@PathVariable String id) {
-        Optional<Job> jobById = jobsEntryService.getJobById(id);
+        Optional<Job> jobById = jobsService.getJobById(id);
         if(jobById.isPresent()){
             return new ResponseEntity<>(jobById.get(), HttpStatus.OK);
         }
@@ -57,7 +57,7 @@ public class JobsController {
             @RequestParam(required = false) String jobType) {
 
         try {
-            List<Job> jobs = jobsEntryService.getJobsByFilters(title, location, company, minSalary, jobType);
+            List<Job> jobs = jobsService.getJobsByFilters(title, location, company, minSalary, jobType);
             return ResponseEntity.ok(jobs);
         } catch (JobNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -72,7 +72,7 @@ public class JobsController {
 
     @DeleteMapping("id/{id}")
     public ResponseEntity<Map<String, String>> deleteJobById(@PathVariable String id) {
-        boolean isDeleted = jobsEntryService.deleteJobById(id);
+        boolean isDeleted = jobsService.deleteJobById(id);
         if (isDeleted) {
             Map<String, String> response = Map.of(
                     "message", "Job with ID " + id + " has been deleted successfully",
@@ -90,7 +90,7 @@ public class JobsController {
 
     @DeleteMapping("delete-all")
     public ResponseEntity<Map<String, String>> deleteAllJobs(){
-        List<Job> deletedJobs=jobsEntryService.deleteAllJobs();
+        List<Job> deletedJobs=jobsService.deleteAllJobs();
         if(!deletedJobs.isEmpty()){
             Map<String, String> response = Map.of(
                     "message", deletedJobs.size()+" jobs deleted successfully",
@@ -110,14 +110,14 @@ public class JobsController {
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
         try {
-            Optional<Job> jobById = jobsEntryService.getJobById(id);
+            Optional<Job> jobById = jobsService.getJobById(id);
             if (jobById.isPresent()) {
                 Job job = jobById.get();
 
                 System.out.println("received request with url(in controller): \n"+url);
 
                 // Call Flask backend to fetch the description
-                String description = jobsEntryService.fetchJobDescriptionFromFlask(url);
+                String description = jobsService.fetchJobDescriptionFromFlask(url);
                 System.out.println("desc in controller: \n"+description);
 
                 // Update the job description
