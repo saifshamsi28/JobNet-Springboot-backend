@@ -132,24 +132,25 @@ public class JobsService {
         }
     }
 
-    public List<Job> getJobsByFilters(String title, String location, String company, Integer minSalary, String jobType) {
+    public List<Job> getJobsByFilters(String title, Integer minSalary, String location, String company) {
         if (title == null || title.isEmpty()) {
-            throw new IllegalArgumentException("Title is required!");
+            throw new JobNotFoundException("Job title is required");
         }
 
-        // Handle optional filters (default values for nulls)
+        // Handle optional filters
         location = (location == null) ? "" : location;
         company = (company == null) ? "" : company;
         minSalary = (minSalary == null) ? 0 : minSalary; // Default: 0 salary filter
-        jobType = (jobType == null) ? "" : jobType;
 
-        List<Job> jobs = jobsRepository.findJobsByFilters(title, location, minSalary,company);
+        List<Job> jobs = jobsRepository.findJobsByFilters(title, minSalary, location, company);
 
         if (jobs.isEmpty()) {
             throw new JobNotFoundException("No jobs found for the given preferences.");
         }
+
         return jobs;
     }
+
 
     // Function to parse salary string into min and max salary
     private int[] parseSalary(String salary) {
