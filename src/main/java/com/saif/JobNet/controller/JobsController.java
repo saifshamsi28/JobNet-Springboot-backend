@@ -57,7 +57,7 @@ public class JobsController {
             @RequestParam(required = false) String jobType) {
 
         try {
-            List<Job> jobs = jobsService.getJobsByFilters(title, location, company, minSalary, jobType);
+            List<Job> jobs = jobsService.getJobsByFilters(title, minSalary, location, company);
             return ResponseEntity.ok(jobs);
         } catch (JobNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
