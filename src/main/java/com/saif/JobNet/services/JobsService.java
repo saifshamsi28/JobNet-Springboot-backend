@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 @Service
 @Component
-public class JobsEntryService {
+public class JobsService {
 //    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
     @Autowired
     private JobsRepository jobsRepository;
