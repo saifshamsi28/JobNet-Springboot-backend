@@ -5,7 +5,7 @@ import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.SaveJobsModel;
 import com.saif.JobNet.model.User;
 import com.saif.JobNet.model.UserLoginCredentials;
-import com.saif.JobNet.services.JobsEntryService;
+import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private JobsEntryService jobsEntryService;
+    private JobsService jobsEntryService;
 
     @GetMapping("all")
     public ResponseEntity<List<User>> getAllUsers(){
