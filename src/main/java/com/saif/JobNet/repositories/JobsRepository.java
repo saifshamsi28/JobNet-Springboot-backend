@@ -12,14 +12,11 @@ import java.util.function.Function;
 
 @Repository
 public interface JobsRepository extends MongoRepository<Job,String> {
-    @Query("{ '$and': [ " +
-            "{ '$or': [ { 'title': { $regex: ?0, $options: 'i' } }, { 'description': { $regex: ?0, $options: 'i' } } ] }, " +
-            "{ '$or': [ { 'location': { $regex: ?1, $options: 'i' } }, { '?1': null } ] }, " +
-            "{ '$or': [ { 'company': { $regex: ?2, $options: 'i' } }, { '?2': null } ] }, " +
-            "{ '$or': [ { 'salary': { $gte: ?3 } }, { '?3': 0 } ] }, " +
-            "{ '$or': [ { 'jobType': { $regex: ?4, $options: 'i' } }, { '?4': null } ] } " +
-            "] }")
-    List<Job> searchJobsByFilters(String title, String location, String company, int minSalary, String jobType);
+    @Query("{ 'title': { $regex: ?0, $options: 'i' }, " +
+            "'minSalary': { $gte: ?1 }, " +
+            "'location': { $regex: ?3, $options: 'i' }, " +
+            "'company': { $regex: ?4, $options: 'i' } }")
+    List<Job> findJobsByFilters(String title, String location, Integer minSalary, String company);
 }
 //    @Override
 //    <S extends Job, R> R findBy(Example<S> example, Function<FluentQuery.FetchableFluentQuery<S>, R> queryFunction);
