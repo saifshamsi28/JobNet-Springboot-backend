@@ -55,11 +55,15 @@ public class JobsController {
             @RequestParam(required = false) String company,
             @RequestParam(required = false) Integer minSalary,
             @RequestParam(required = false) String jobType) {
+        minSalary=minSalary*100000;
+        System.out.println("request received with title: "+title+", salary: "+minSalary);
 
         try {
             List<Job> jobs = jobsService.getJobsByFilters(title, minSalary, location, company);
+            System.out.println("no of jobs matched for the preference: "+jobs.size());
             return ResponseEntity.ok(jobs);
         } catch (JobNotFoundException e) {
+            System.out.println("no jobs found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Collections.singletonMap("error", e.getMessage()));
         } catch (Exception e) {
@@ -122,7 +126,6 @@ public class JobsController {
 
                 // Update the job description
                 job.setDescription(description);
-
                 return new ResponseEntity<>(job,HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
