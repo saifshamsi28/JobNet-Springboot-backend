@@ -33,18 +33,23 @@ public class User {
         boolean found = false;
 
         // Iterate through the saved jobs and compare by ID
-        for (Job savedJob : savedJobs) {
-            if (savedJob.getId().equals(job.getId())) {
-                savedJobs.remove(savedJob);
-                System.out.println("Removing the job: " + job.getId() + " , title: " + job.getTitle());
-                found = true;
-                break;
-            }
-        }
+//        for (Job savedJob : savedJobs) {
+//            if (savedJob.getId().equals(job.getId())) {
+//                savedJobs.remove(savedJob);
+//                System.out.println("Removing the job: " + job.getId() + " , title: " + job.getTitle());
+//                found = true;
+//                break;
+//            }
+//        }
 
-        if (!found) {
+        if (!job.isSaved()) {
             savedJobs.add(job);
+            job.setSaved(true);
             System.out.println("Adding the job: " + job.getId() + " , title: " + job.getTitle());
+        }else {
+            savedJobs.remove(job);
+            job.setSaved(false);
+            System.out.println("removing the job: " + job.getId() + " , title: " + job.getTitle());
         }
     }
 
