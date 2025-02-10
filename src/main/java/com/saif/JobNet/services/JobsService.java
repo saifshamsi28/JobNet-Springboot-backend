@@ -34,6 +34,7 @@ public class JobsService {
         List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
         for(Job job:jobs) {
             job.setDate(LocalDateTime.now());
+            job.setSaved(false);
             int[] salaryRange = parseSalary(job.getSalary());
             job.setMinSalary(salaryRange[0]);
             job.setMaxSalary(salaryRange[1]);
