@@ -30,14 +30,14 @@ public class JobsService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public int insertJob(List<Job> jobs){
+    public int insertAllJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
         for(Job job:jobs) {
             job.setDate(LocalDateTime.now());
-            job.setSaved(false);
             int[] salaryRange = parseSalary(job.getSalary());
             job.setMinSalary(salaryRange[0]);
             job.setMaxSalary(salaryRange[1]);
+            job.setFullDescription(null);
         }
         jobsRepository.saveAll(jobs);
         List<Job> jobsAfterInsertedNewJobs = jobsRepository.findAll();
@@ -46,6 +46,10 @@ public class JobsService {
         }else {
             return 0;
         }
+    }
+
+    public void insertJob(Job jobs){
+        jobsRepository.save(jobs);
     }
 
     //to get all jobs
@@ -57,6 +61,10 @@ public class JobsService {
     //to get specific job
     public Optional<Job> getJobById(String id){
         return jobsRepository.findById(id);
+    }
+
+    public Optional<Job> getJobByUrl(String url){
+        return Optional.ofNullable(jobsRepository.findByUrl(url));
     }
 
     public boolean deleteJobById(String id) {
