@@ -2,6 +2,7 @@ package com.saif.JobNet.controller;
 
 import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
+import com.saif.JobNet.model.JobUpdateDTO;
 import com.saif.JobNet.services.JobsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,9 @@ public class JobsController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> insertJob(@RequestBody List<Job> jobs){
-            int noOfInsertedJobs=jobsService.insertJob(jobs);
+    public ResponseEntity<Map<String, String>> insertAllJob(@RequestBody List<Job> jobs){
+        System.out.println("no of job to insert: "+jobs.size());
+            int noOfInsertedJobs=jobsService.insertAllJob(jobs);
             if(noOfInsertedJobs==0){
                 Map<String, String> response = Map.of(
                         "message", "New jobs not inserted",
@@ -125,12 +127,35 @@ public class JobsController {
                 System.out.println("desc in controller: \n"+description);
 
                 // Update the job description
-                job.setDescription(description);
+                job.setFullDescription(description);
                 return new ResponseEntity<>(job,HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PatchMapping("job/{id}/update-description")
+    public ResponseEntity<Job> updateJobDescription(@PathVariable String id,@RequestBody JobUpdateDTO jobUpdateDTO) {
+        Optional<Job> jobOptional = jobsService.getJobByUrl(jobUpdateDTO.getUrl());
+
+//        System.out.println("got job with id: "+id);
+//        System.out.println("got job with url: "+jobUpdateDTO.getUrl());
+//        System.out.println("got job with full desc: "+jobUpdateDTO.getFullDescription());
+
+        if (jobOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Job job = jobOptional.get();
+        job.setFullDescription(jobUpdateDTO.getFullDescription()); // Update only fullDescription
+        jobsService.insertJob(job);
+
+        if(job.getFullDescription()!=null)
+            return ResponseEntity.ok(job);
+        else {
+            return new ResponseEntity<>(job,HttpStatus.NOT_IMPLEMENTED);
         }
     }
 }
