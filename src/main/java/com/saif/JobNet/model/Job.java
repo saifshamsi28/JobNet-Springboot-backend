@@ -46,11 +46,12 @@ public class Job {
     private String post_date;
 
     @JsonProperty("description")
-    private String description;
+    private String shortDescription;
+
+    @JsonProperty("full_description")
+    private String fullDescription;
 
     private LocalDateTime date;
-
-    private boolean isSaved;
 
     @Override
     public boolean equals(Object o) {

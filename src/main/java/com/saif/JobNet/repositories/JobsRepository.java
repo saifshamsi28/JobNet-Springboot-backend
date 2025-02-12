@@ -12,6 +12,10 @@ import java.util.function.Function;
 
 @Repository
 public interface JobsRepository extends MongoRepository<Job, String> {
+
+
+    Job findByUrl(String url);
+
     @Query("{ 'title': { $regex: ?0, $options: 'i' }, " +
             "'minSalary': { $gte: ?1 }, " +
             "'location': { $regex: ?2, $options: 'i' }, " +
