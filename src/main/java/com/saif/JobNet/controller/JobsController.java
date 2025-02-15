@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/home")
 public class JobsController {
     @Autowired
@@ -115,6 +116,8 @@ public class JobsController {
 
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
+        System.out.println("id received: "+id);
+        System.out.println("url received: "+url);
         try {
             Optional<Job> jobById = jobsService.getJobById(id);
             if (jobById.isPresent()) {
