@@ -125,9 +125,19 @@ public class JobsController {
 
                 System.out.println("received request with url(in controller): \n"+url);
 
-                // Call Flask backend to fetch the description
-                String description = jobsService.fetchJobDescriptionFromFlask(url);
-                System.out.println("desc in controller: \n"+description);
+                String description;
+                if(job.getFullDescription()==null){
+                    // Call Flask backend to fetch the description
+                    description = jobsService.fetchJobDescriptionFromFlask(url);
+                    if(description.length()<50){
+                        job.setFullDescription(null);
+                    }else {
+                        job.setFullDescription(description);
+                    }
+//                    System.out.println("desc in controller: \n"+description);
+                }else {
+                    description= job.getFullDescription();
+                }
 
                 // Update the job description
                 job.setFullDescription(description);

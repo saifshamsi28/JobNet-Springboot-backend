@@ -120,8 +120,9 @@ public class JobsService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
                 if (responseBody != null) {
-                    if (responseBody.containsKey("description")) {
-                        return (String) responseBody.get("description");
+                    if (responseBody.containsKey("full_description")) {
+//                        System.out.println("received full description: "+responseBody.get("full_description"));
+                        return (String) responseBody.get("full_description");
                     } else if (responseBody.containsKey("error")) {
                         return "Error from Flask: " + responseBody.get("error");
                     } else {
@@ -132,7 +133,7 @@ public class JobsService {
                 }
             } else {
                 throw new RuntimeException("Failed to fetch job description from Flask: " +
-                        response.getStatusCodeValue());
+                        response.getStatusCode());
             }
         } catch (Exception e) {
             // Handle exceptions gracefully
