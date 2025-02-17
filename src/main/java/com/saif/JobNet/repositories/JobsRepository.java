@@ -16,10 +16,11 @@ public interface JobsRepository extends MongoRepository<Job, String> {
 
     Job findByUrl(String url);
 
-    @Query("{ 'title': { $regex: ?0, $options: 'i' }, " +
-            "'minSalary': { $gte: ?1 }, " +
-            "'location': { $regex: ?2, $options: 'i' }, " +
-            "'company': { $regex: ?3, $options: 'i' } }")
-    List<Job> findJobsByFilters(String title, Integer minSalary, String location, String company);
+//    @Query("{ 'title': { $regex: ?0, $options: 'i' }, " +
+//            "'minSalary': { $gte: ?1 }, " +
+//            "'location': { $regex: ?2, $options: 'i' }, " +
+//            "'company': { $regex: ?3, $options: 'i' } }")
+//    List<Job> findJobsByFilters(String title, Integer minSalary, String location, String company);
 }
+
 

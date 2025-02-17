@@ -53,11 +53,14 @@ public class JobsController {
 
     @GetMapping("/jobs")
     public ResponseEntity<?> getJobsByFilters(
-            @RequestParam String title, // Required parameter
+            @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String company,
             @RequestParam(required = false) Integer minSalary,
             @RequestParam(required = false) String jobType) {
+        if(minSalary==null){
+            minSalary=0;
+        }
         minSalary=minSalary*100000;
         System.out.println("request received with title: "+title+", salary: "+minSalary);
 
