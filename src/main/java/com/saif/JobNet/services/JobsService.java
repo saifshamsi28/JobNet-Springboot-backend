@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @Service
 @Component
 public class JobsService {
-//    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
     @Autowired
     private JobsRepository jobsRepository;
 
@@ -130,7 +129,6 @@ public class JobsService {
                 Map<String, Object> responseBody = response.getBody();
                 if (responseBody != null) {
                     if (responseBody.containsKey("full_description")) {
-//                        System.out.println("received full description: "+responseBody.get("full_description"));
                         return (String) responseBody.get("full_description");
                     } else if (responseBody.containsKey("error")) {
                         return "Error from Flask: " + responseBody.get("error");
@@ -150,22 +148,6 @@ public class JobsService {
             return "Unable to fetch job description due to a backend issue.";
         }
     }
-
-//    public List<Job> getJobsByFilters(String title, Integer minSalary, String location, String company) {
-//
-//        // Handle optional filters
-//        location = (location == null) ? "" : location;
-//        company = (company == null) ? "" : company;
-//        minSalary = (minSalary == null) ? 0 : minSalary; // Default: 0 salary filter
-//
-//        List<Job> jobs = jobsRepository.findJobsByFilters(title, minSalary, location, company);
-//
-//        if (jobs.isEmpty()) {
-//            throw new JobNotFoundException("No jobs found for the given preferences.");
-//        }
-//
-//        return jobs;
-//    }
 
     public List<Job> getJobsByFilters(String title, Integer minSalary, String location, String company) {
         Query query = new Query();
