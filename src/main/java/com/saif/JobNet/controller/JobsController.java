@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/home")
 public class JobsController {
     @Autowired
@@ -52,11 +53,14 @@ public class JobsController {
 
     @GetMapping("/jobs")
     public ResponseEntity<?> getJobsByFilters(
-            @RequestParam String title, // Required parameter
+            @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String company,
             @RequestParam(required = false) Integer minSalary,
             @RequestParam(required = false) String jobType) {
+        if(minSalary==null){
+            minSalary=0;
+        }
         minSalary=minSalary*100000;
         System.out.println("request received with title: "+title+", salary: "+minSalary);
 
@@ -115,6 +119,8 @@ public class JobsController {
 
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
+        System.out.println("id received: "+id);
+        System.out.println("url received: "+url);
         try {
             Optional<Job> jobById = jobsService.getJobById(id);
             if (jobById.isPresent()) {
@@ -122,9 +128,19 @@ public class JobsController {
 
                 System.out.println("received request with url(in controller): \n"+url);
 
-                // Call Flask backend to fetch the description
-                String description = jobsService.fetchJobDescriptionFromFlask(url);
-                System.out.println("desc in controller: \n"+description);
+                String description;
+                if(job.getFullDescription()==null){
+                    // Call Flask backend to fetch the description
+                    description = jobsService.fetchJobDescriptionFromFlask(url);
+                    if(description.length()<50){
+                        job.setFullDescription(null);
+                    }else {
+                        job.setFullDescription(description);
+                    }
+//                    System.out.println("desc in controller: \n"+description);
+                }else {
+                    description= job.getFullDescription();
+                }
 
                 // Update the job description
                 job.setFullDescription(description);

@@ -4,6 +4,9 @@ import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.repositories.JobsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -23,12 +26,17 @@ import java.util.stream.Collectors;
 @Service
 @Component
 public class JobsService {
-//    private final String BASE_URL = "https://jobnet-flask-backend.onrender.com";
     @Autowired
     private JobsRepository jobsRepository;
 
     @Autowired
     private RestTemplate restTemplate;
+
+    private final MongoTemplate mongoTemplate;
+
+    public JobsService(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     public int insertAllJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
@@ -120,8 +128,8 @@ public class JobsService {
             if (response.getStatusCode() == HttpStatus.OK) {
                 Map<String, Object> responseBody = response.getBody();
                 if (responseBody != null) {
-                    if (responseBody.containsKey("description")) {
-                        return (String) responseBody.get("description");
+                    if (responseBody.containsKey("full_description")) {
+                        return (String) responseBody.get("full_description");
                     } else if (responseBody.containsKey("error")) {
                         return "Error from Flask: " + responseBody.get("error");
                     } else {
@@ -132,7 +140,7 @@ public class JobsService {
                 }
             } else {
                 throw new RuntimeException("Failed to fetch job description from Flask: " +
-                        response.getStatusCodeValue());
+                        response.getStatusCode());
             }
         } catch (Exception e) {
             // Handle exceptions gracefully
@@ -142,16 +150,26 @@ public class JobsService {
     }
 
     public List<Job> getJobsByFilters(String title, Integer minSalary, String location, String company) {
-        if (title == null || title.isEmpty()) {
-            throw new JobNotFoundException("Job title is required");
+        Query query = new Query();
+
+        if (title != null && !title.isEmpty()) {
+            // Search title in both title and description fields
+            query.addCriteria(new Criteria().orOperator(
+                    Criteria.where("title").regex(title, "i"),
+                    Criteria.where("description").regex(title, "i")
+            ));
+        }
+        if (location != null && !location.isEmpty()) {
+            query.addCriteria(Criteria.where("location").regex(location, "i"));
+        }
+        if (company != null && !company.isEmpty()) {
+            query.addCriteria(Criteria.where("company").regex(company, "i"));
+        }
+        if (minSalary != null && minSalary > 0) {
+            query.addCriteria(Criteria.where("minSalary").gte(minSalary));
         }
 
-        // Handle optional filters
-        location = (location == null) ? "" : location;
-        company = (company == null) ? "" : company;
-        minSalary = (minSalary == null) ? 0 : minSalary; // Default: 0 salary filter
-
-        List<Job> jobs = jobsRepository.findJobsByFilters(title, minSalary, location, company);
+        List<Job> jobs = mongoTemplate.find(query, Job.class);
 
         if (jobs.isEmpty()) {
             throw new JobNotFoundException("No jobs found for the given preferences.");
@@ -159,7 +177,6 @@ public class JobsService {
 
         return jobs;
     }
-
 
     // Function to parse salary string into min and max salary
     private int[] parseSalary(String salary) {

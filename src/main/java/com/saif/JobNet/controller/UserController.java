@@ -8,16 +8,34 @@ import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/user")
 public class UserController {
 
+//    private static final String SUPABASE_URL = "https://ynsrmwwmlwmagvanssnx.supabase.co";
+//    private static final String SUPABASE_BUCKET = "resumes";
+//    private static final String SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inluc3Jtd3dtbHdtYWd2YW5zc254Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDQxODUzNCwiZXhwIjoyMDU1OTk0NTM0fQ.OyfdQKab3nkCa57NMmt8WE8CU247B3rmekjMZOIzmjs";
+
+    @Value("${SUPABASE_URL}")
+    private String SUPABASE_URL;
+
+    @Value("${SUPABASE_BUCKET}")
+    private String SUPABASE_BUCKET;
+
+    @Value("${SUPABASE_SERVICE_ROLE_KEY}")
+    private String SUPABASE_SERVICE_ROLE_KEY;
     @Autowired
     private UserService userService;
 
@@ -190,4 +208,57 @@ public class UserController {
         }
     }
 
+    @PostMapping("resume/upload")
+    public ResponseEntity<?> uploadResume(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileName =generateUniqueFileName(file.getOriginalFilename());
+            String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + fileName;
+            System.out.println("upload url: " + uploadUrl);
+
+            // Set headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + SUPABASE_SERVICE_ROLE_KEY);
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            // Create request body
+            LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new ByteArrayResource(file.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return file.getOriginalFilename(); // Important for Supabase to recognize file format
+                }
+            });
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                String fileUrl = SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + fileName;
+                System.out.println("file uploaded successfully: url=" + fileUrl);
+
+                return ResponseEntity.ok(fileUrl);
+            } else {
+                System.out.println("response from supabase: " + response);
+                return ResponseEntity.status(response.getStatusCode()).body("Failed to upload resume");
+            }
+
+        } catch (Exception e) {
+            System.out.println("error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading resume: " + e.getMessage());
+        }
+    }
+
+    private String generateUniqueFileName(String originalFileName) {
+        String extension = "";
+        int dotIndex = originalFileName.lastIndexOf(".");
+
+        if (dotIndex > 0) {
+            extension = originalFileName.substring(dotIndex);  // Get file extension
+            originalFileName = originalFileName.substring(0, dotIndex);  // Remove extension
+        }
+
+        String timestamp = String.valueOf(System.currentTimeMillis());  // Unique timestamp
+        return originalFileName + "_" + timestamp + extension;  // New unique filename
+    }
 }
