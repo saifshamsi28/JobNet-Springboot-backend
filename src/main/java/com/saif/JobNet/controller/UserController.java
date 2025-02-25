@@ -24,18 +24,14 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
-//    private static final String SUPABASE_URL = "https://ynsrmwwmlwmagvanssnx.supabase.co";
-//    private static final String SUPABASE_BUCKET = "resumes";
-//    private static final String SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inluc3Jtd3dtbHdtYWd2YW5zc254Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDQxODUzNCwiZXhwIjoyMDU1OTk0NTM0fQ.OyfdQKab3nkCa57NMmt8WE8CU247B3rmekjMZOIzmjs";
+//    @Value("${SUPABASE_URL}")
+    private final String SUPABASE_URL=System.getenv("SUPABASE_URL");
 
-    @Value("${SUPABASE_URL}")
-    private String SUPABASE_URL;
+//    @Value("${SUPABASE_BUCKET}")
+    private final String SUPABASE_BUCKET=System.getenv("SUPABASE_BUCKET");
 
-    @Value("${SUPABASE_BUCKET}")
-    private String SUPABASE_BUCKET;
-
-    @Value("${SUPABASE_SERVICE_ROLE_KEY}")
-    private String SUPABASE_SERVICE_ROLE_KEY;
+//    @Value("${SUPABASE_SERVICE_ROLE_KEY}")
+    private final String SUPABASE_SERVICE_ROLE_KEY=System.getenv("SUPABASE_SERVICE_ROLE_KEY");
     @Autowired
     private UserService userService;
 
