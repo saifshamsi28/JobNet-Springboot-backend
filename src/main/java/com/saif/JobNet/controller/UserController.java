@@ -8,6 +8,7 @@ import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,10 +24,18 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
-    private static final String SUPABASE_URL = "https://ynsrmwwmlwmagvanssnx.supabase.co";
-    private static final String SUPABASE_BUCKET = "resumes";
-    private static final String SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inluc3Jtd3dtbHdtYWd2YW5zc254Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDQxODUzNCwiZXhwIjoyMDU1OTk0NTM0fQ.OyfdQKab3nkCa57NMmt8WE8CU247B3rmekjMZOIzmjs";
+//    private static final String SUPABASE_URL = "https://ynsrmwwmlwmagvanssnx.supabase.co";
+//    private static final String SUPABASE_BUCKET = "resumes";
+//    private static final String SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inluc3Jtd3dtbHdtYWd2YW5zc254Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MDQxODUzNCwiZXhwIjoyMDU1OTk0NTM0fQ.OyfdQKab3nkCa57NMmt8WE8CU247B3rmekjMZOIzmjs";
 
+    @Value("${SUPABASE_URL}")
+    private String SUPABASE_URL;
+
+    @Value("${SUPABASE_BUCKET}")
+    private String SUPABASE_BUCKET;
+
+    @Value("${SUPABASE_SERVICE_ROLE_KEY}")
+    private String SUPABASE_SERVICE_ROLE_KEY;
     @Autowired
     private UserService userService;
 
