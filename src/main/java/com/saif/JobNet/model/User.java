@@ -26,6 +26,10 @@ public class User {
     @NonNull
     private String password;
     private String phoneNumber;
+    private boolean isResumeUploaded;
+    private String resumeUrl;
+    private String resumeUploadDate;
+
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();
 

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -205,11 +206,21 @@ public class UserController {
     }
 
     @PostMapping("resume/upload")
-    public ResponseEntity<?> uploadResume(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadResume(@RequestParam("id") String id,
+                                          @RequestParam("filename") String resumeName,
+                                          @RequestParam("file") MultipartFile file) {
+        System.out.println("user id: "+id);
+        System.out.println("user resume name received: "+resumeName);
         try {
-            String fileName =generateUniqueFileName(file.getOriginalFilename());
+            String fileName =generateUniqueFileName(resumeName);
             String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + fileName;
             System.out.println("upload url: " + uploadUrl);
+
+            Optional<User> userBox=userService.getUserById(id);
+
+            if(userBox.isEmpty()){
+                return new ResponseEntity<>("Failed to upload resume as user not found",HttpStatus.NOT_FOUND);
+            }
 
             // Set headers
             HttpHeaders headers = new HttpHeaders();
@@ -233,6 +244,11 @@ public class UserController {
                 String fileUrl = SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + fileName;
                 System.out.println("file uploaded successfully: url=" + fileUrl);
 
+                User user=userBox.get();
+                user.setResumeUploaded(true);
+                user.setResumeUrl(fileUrl);
+                user.setResumeUploadDate(getCurrentDate());
+                userService.saveUser(user);
                 return ResponseEntity.ok(fileUrl);
             } else {
                 System.out.println("response from supabase: " + response);
@@ -256,5 +272,10 @@ public class UserController {
 
         String timestamp = String.valueOf(System.currentTimeMillis());  // Unique timestamp
         return originalFileName + "_" + timestamp + extension;  // New unique filename
+    }
+
+    private String getCurrentDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+        return sdf.format(new Date());
     }
 }
