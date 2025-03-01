@@ -1,10 +1,6 @@
 package com.saif.JobNet.controller;
 
-import com.saif.JobNet.model.UpdateUserRequest;
-import com.saif.JobNet.model.Job;
-import com.saif.JobNet.model.SaveJobsModel;
-import com.saif.JobNet.model.User;
-import com.saif.JobNet.model.UserLoginCredentials;
+import com.saif.JobNet.model.*;
 import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -206,22 +202,30 @@ public class UserController {
     }
 
     @PostMapping("resume/upload")
-    public ResponseEntity<?> uploadResume(@RequestParam("id") String id,
-                                          @RequestParam("filename") String resumeName,
-                                          @RequestParam("file") MultipartFile file) {
-        System.out.println("user id: "+id);
-        System.out.println("user resume name received: "+resumeName);
+    public ResponseEntity<?> uploadResume(
+            @RequestParam("userId") String userId,   // Change @RequestPart to @RequestParam
+            @RequestParam("resumeName") String resumeName,
+            @RequestParam("resumeDate") String resumeUploadDate,
+            @RequestParam("resumeSize") String resumeSize,
+            @RequestPart("file") MultipartFile file) {
+
+        System.out.println("user id: " + userId);
+        System.out.println("resume name received: " + resumeName);
+        System.out.println("resume upload date received: " + resumeUploadDate);
+        System.out.println("resume size received: " + resumeSize);
         try {
-            String fileName =generateUniqueFileName(resumeName);
+            String fileName =userService.generateUniqueFileName(resumeName);
             String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + fileName;
             System.out.println("upload url: " + uploadUrl);
 
-            Optional<User> userBox=userService.getUserById(id);
+            Optional<User> userBox=userService.getUserById(userId);
 
             if(userBox.isEmpty()){
+                System.out.println("user is not found with id : "+userId);
                 return new ResponseEntity<>("Failed to upload resume as user not found",HttpStatus.NOT_FOUND);
             }
 
+            System.out.println("user is found: "+userBox.get());
             // Set headers
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + SUPABASE_SERVICE_ROLE_KEY);
@@ -245,37 +249,20 @@ public class UserController {
                 System.out.println("file uploaded successfully: url=" + fileUrl);
 
                 User user=userBox.get();
+                user.setResumeName(resumeName);
                 user.setResumeUploaded(true);
                 user.setResumeUrl(fileUrl);
-                user.setResumeUploadDate(getCurrentDate());
+                user.setResumeSize(resumeSize);
+                user.setResumeUploadDate(resumeUploadDate);
                 userService.saveUser(user);
                 return ResponseEntity.ok(fileUrl);
             } else {
                 System.out.println("response from supabase: " + response);
                 return ResponseEntity.status(response.getStatusCode()).body("Failed to upload resume");
             }
-
         } catch (Exception e) {
             System.out.println("error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading resume: " + e.getMessage());
         }
-    }
-
-    private String generateUniqueFileName(String originalFileName) {
-        String extension = "";
-        int dotIndex = originalFileName.lastIndexOf(".");
-
-        if (dotIndex > 0) {
-            extension = originalFileName.substring(dotIndex);  // Get file extension
-            originalFileName = originalFileName.substring(0, dotIndex);  // Remove extension
-        }
-
-        String timestamp = String.valueOf(System.currentTimeMillis());  // Unique timestamp
-        return originalFileName + "_" + timestamp + extension;  // New unique filename
-    }
-
-    private String getCurrentDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-        return sdf.format(new Date());
     }
 }
