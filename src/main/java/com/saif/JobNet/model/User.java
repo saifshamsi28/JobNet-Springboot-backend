@@ -28,7 +28,10 @@ public class User {
     private String phoneNumber;
     private boolean isResumeUploaded;
     private String resumeUrl;
+    private String resumeName;
     private String resumeUploadDate;
+    private String resumeSize;
+
 
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();

@@ -19,7 +19,6 @@ public class JobsController {
 
     @GetMapping
     public List<Job> getAllJobs(){
-//        jobsService.
         System.out.println("received request for home screen");
         return jobsService.getAllJobs();
     }
