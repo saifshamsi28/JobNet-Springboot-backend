@@ -4,16 +4,9 @@ import com.saif.JobNet.model.*;
 import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -21,6 +14,8 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
+
+    private final String UPLOAD_DIR = "uploads/";
 //    @Value("${SUPABASE_URL}")
     private final String SUPABASE_URL=System.getenv("SUPABASE_URL");
 
@@ -201,68 +196,4 @@ public class UserController {
         }
     }
 
-    @PostMapping("resume/upload")
-    public ResponseEntity<?> uploadResume(
-            @RequestParam("userId") String userId,   // Change @RequestPart to @RequestParam
-            @RequestParam("resumeName") String resumeName,
-            @RequestParam("resumeDate") String resumeUploadDate,
-            @RequestParam("resumeSize") String resumeSize,
-            @RequestPart("file") MultipartFile file) {
-
-        System.out.println("user id: " + userId);
-        System.out.println("resume name received: " + resumeName);
-        System.out.println("resume upload date received: " + resumeUploadDate);
-        System.out.println("resume size received: " + resumeSize);
-        try {
-            String fileName =userService.generateUniqueFileName(resumeName);
-            String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + fileName;
-            System.out.println("upload url: " + uploadUrl);
-
-            Optional<User> userBox=userService.getUserById(userId);
-
-            if(userBox.isEmpty()){
-                System.out.println("user is not found with id : "+userId);
-                return new ResponseEntity<>("Failed to upload resume as user not found",HttpStatus.NOT_FOUND);
-            }
-
-            System.out.println("user is found: "+userBox.get());
-            // Set headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + SUPABASE_SERVICE_ROLE_KEY);
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            // Create request body
-            LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("file", new ByteArrayResource(file.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return file.getOriginalFilename(); // Important for Supabase to recognize file format
-                }
-            });
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
-
-            if (response.getStatusCode() == HttpStatus.OK) {
-                String fileUrl = SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + fileName;
-                System.out.println("file uploaded successfully: url=" + fileUrl);
-
-                User user=userBox.get();
-                user.setResumeName(resumeName);
-                user.setResumeUploaded(true);
-                user.setResumeUrl(fileUrl);
-                user.setResumeSize(resumeSize);
-                user.setResumeUploadDate(resumeUploadDate);
-                userService.saveUser(user);
-                return ResponseEntity.ok(fileUrl);
-            } else {
-                System.out.println("response from supabase: " + response);
-                return ResponseEntity.status(response.getStatusCode()).body("Failed to upload resume");
-            }
-        } catch (Exception e) {
-            System.out.println("error: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading resume: " + e.getMessage());
-        }
-    }
 }
