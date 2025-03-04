@@ -14,16 +14,6 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
-
-    private final String UPLOAD_DIR = "uploads/";
-//    @Value("${SUPABASE_URL}")
-    private final String SUPABASE_URL=System.getenv("SUPABASE_URL");
-
-//    @Value("${SUPABASE_BUCKET}")
-    private final String SUPABASE_BUCKET=System.getenv("SUPABASE_BUCKET");
-
-//    @Value("${SUPABASE_SERVICE_ROLE_KEY}")
-    private final String SUPABASE_SERVICE_ROLE_KEY=System.getenv("SUPABASE_SERVICE_ROLE_KEY");
     @Autowired
     private UserService userService;
 
