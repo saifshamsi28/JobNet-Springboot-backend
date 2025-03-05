@@ -19,13 +19,13 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     protected String getDatabaseName() {
-        return "JobNetDatabaseFirstCluster"; // Specify your MongoDB database name
+        return "JobNetDatabaseFirstCluster";
     }
 
     @Override
     @NonNull
     public com.mongodb.client.MongoClient mongoClient() {
-        return MongoClients.create(mongoUri); // Replace with your MongoDB URI
+        return MongoClients.create(mongoUri);
     }
 
     @Bean

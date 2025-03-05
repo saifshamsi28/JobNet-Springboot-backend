@@ -1,7 +1,6 @@
 package com.saif.JobNet.model;
 
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 public class ResumeResponseEntity {

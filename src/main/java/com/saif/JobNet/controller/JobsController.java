@@ -156,10 +156,6 @@ public class JobsController {
     public ResponseEntity<Job> updateJobDescription(@PathVariable String id,@RequestBody JobUpdateDTO jobUpdateDTO) {
         Optional<Job> jobOptional = jobsService.getJobByUrl(jobUpdateDTO.getUrl());
 
-//        System.out.println("got job with id: "+id);
-//        System.out.println("got job with url: "+jobUpdateDTO.getUrl());
-//        System.out.println("got job with full desc: "+jobUpdateDTO.getFullDescription());
-
         if (jobOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
