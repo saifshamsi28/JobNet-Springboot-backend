@@ -7,6 +7,5 @@ public class JobUpdateDTO {
     private String url;
     private String fullDescription;
 
-    // Constructor
     public JobUpdateDTO() {}
 }
