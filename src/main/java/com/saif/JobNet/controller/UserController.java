@@ -42,6 +42,16 @@ public class UserController {
                 .body(available);
     }
 
+    @GetMapping("email")
+    public ResponseEntity<Boolean> checkEmailAvailable(@RequestParam("email") String email) {
+        boolean available = !userService.checkEmailAlreadyExists(email);
+        System.out.println("email: " + email + ", available: " + available);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(available);
+    }
+
+
+
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
         System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());
@@ -49,15 +59,15 @@ public class UserController {
         return new ResponseEntity<>(user,HttpStatus.CREATED);
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody UpdateUserRequest updateRequest) {
+    @PutMapping("update")
+    public ResponseEntity<?> updateUser(@RequestBody UpdateUserModel updateRequest) {
         if (updateRequest.getId() == null || updateRequest.getId().isEmpty()) {
-            return new ResponseEntity<>("id or email is mandatory to update the details",HttpStatus.BAD_REQUEST); // ID is mandatory
+            return new ResponseEntity<>(new AuthResponse("id or email is mandatory to update the details",HttpStatus.BAD_REQUEST.value()),HttpStatus.BAD_REQUEST); // ID is mandatory
         }
 
         Optional<User> existingUserOpt = userService.getUserById(updateRequest.getId());
         if (existingUserOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // User not found
+            return new ResponseEntity<>(new AuthResponse("User not found",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND); // User not found
         }
 
         User existingUser = existingUserOpt.get();
@@ -127,14 +137,14 @@ public class UserController {
             user.addOrRemoveJobToUser(job);
             List<Job> savedAfter = new ArrayList<>(user.getSavedJobs());
 
-            System.out.println("Saved jobs length: " + savedBefore.size() + "\nSaved jobs after: " + savedAfter.size());
+//            System.out.println("Saved jobs length: " + savedBefore.size() + "\nSaved jobs after: " + savedAfter.size());
 
             if (savedBefore.size() == savedAfter.size()) {
                 if (saveJobsModel.isWantToSave()) {
-                    System.out.println("Failed to save job, jobid: " + job.getId() + " , title: " + job.getTitle());
+//                    System.out.println("Failed to save job, jobid: " + job.getId() + " , title: " + job.getTitle());
                     return new ResponseEntity<>("Failed to save job, jobid: " + job.getId() + " , title: " + job.getTitle(), HttpStatus.INTERNAL_SERVER_ERROR);
                 } else {
-                    System.out.println("Failed to remove job, jobid: " + job.getId() + " , title: " + job.getTitle());
+//                    System.out.println("Failed to remove job, jobid: " + job.getId() + " , title: " + job.getTitle());
                     return new ResponseEntity<>("Failed to remove job, jobid: " + job.getId() + " , title: " + job.getTitle(), HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             } else {

@@ -2,7 +2,6 @@ package com.saif.JobNet.controller;
 
 import com.saif.JobNet.model.AuthResponse;
 import com.saif.JobNet.model.User;
-import com.saif.JobNet.model.UserDTO;
 import com.saif.JobNet.model.UserLoginCredentials;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
