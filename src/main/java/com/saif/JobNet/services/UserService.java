@@ -31,6 +31,16 @@ public class UserService {
         System.out.println("in user service getting user by id: "+id);
         return userRepository.findById(id);
     }
+
+    public Optional<User> getUserByUserName(String userName){
+        return userRepository.getUserByUserName(userName);
+    }
+
+    public Optional<User> getUserByEmail(String email){
+        return userRepository.getUserByEmail(email);
+    }
+
+
     public void deleteUserById(String id){
         userRepository.deleteById(id);
     }
@@ -49,11 +59,11 @@ public class UserService {
     }
 
     public boolean checkUserNameAvailable(String username){
-        return !userRepository.existsByUserName(username); //returning true if username not exist
+        return userRepository.existsByUserName(username);
     }
 
     public boolean checkEmailAlreadyExists(String email){
-        return !userRepository.existsByEmail(email); //returning true if email not exist
+        return userRepository.existsByEmail(email);
     }
 
     public String generateUniqueFileName(String originalFileName) {

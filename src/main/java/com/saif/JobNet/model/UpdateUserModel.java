@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UpdateUserRequest {
+public class UpdateUserModel {
     private String id;
     private String name;
     private String userName;
