@@ -51,7 +51,6 @@ public class UserController {
     }
 
 
-
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
         System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());
@@ -60,12 +59,13 @@ public class UserController {
     }
 
     @PutMapping("update")
-    public ResponseEntity<?> updateUser(@RequestBody UpdateUserModel updateRequest) {
-        if (updateRequest.getId() == null || updateRequest.getId().isEmpty()) {
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateDTO userUpdateDTO) {
+        if (userUpdateDTO.getId() == null || userUpdateDTO.getId().isEmpty()) {
             return new ResponseEntity<>(new AuthResponse("id or email is mandatory to update the details",HttpStatus.BAD_REQUEST.value()),HttpStatus.BAD_REQUEST); // ID is mandatory
         }
+        System.out.println("got details to update: "+userUpdateDTO);
 
-        Optional<User> existingUserOpt = userService.getUserById(updateRequest.getId());
+        Optional<User> existingUserOpt = userService.getUserById(userUpdateDTO.getId());
         if (existingUserOpt.isEmpty()) {
             return new ResponseEntity<>(new AuthResponse("User not found",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND); // User not found
         }
@@ -73,20 +73,17 @@ public class UserController {
         User existingUser = existingUserOpt.get();
 
         // Update only the provided fields
-        if (updateRequest.getName() != null) {
-            existingUser.setName(updateRequest.getName());
+        if (userUpdateDTO.getName() != null) {
+            existingUser.setName(userUpdateDTO.getName());
         }
-        if (updateRequest.getUserName() != null) {
-            existingUser.setUserName(updateRequest.getUserName());
+        if (userUpdateDTO.getEmail() != null) {
+            existingUser.setEmail(userUpdateDTO.getEmail());
         }
-        if (updateRequest.getEmail() != null) {
-            existingUser.setEmail(updateRequest.getEmail());
+        if (userUpdateDTO.getPassword() != null) {
+            existingUser.setPassword(userUpdateDTO.getPassword());
         }
-        if (updateRequest.getPassword() != null) {
-            existingUser.setPassword(updateRequest.getPassword());
-        }
-        if (updateRequest.getPhoneNumber() != null) {
-            existingUser.setPhoneNumber(updateRequest.getPhoneNumber());
+        if (userUpdateDTO.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(userUpdateDTO.getPhoneNumber());
         }
 
         userService.saveUser(existingUser);
