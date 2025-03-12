@@ -1,18 +1,28 @@
 package com.saif.JobNet.controller;
 
+import ch.qos.logback.core.util.FileUtil;
 import com.saif.JobNet.model.*;
 import com.saif.JobNet.services.JobsService;
+import com.saif.JobNet.services.SupabaseStorageService;
 import com.saif.JobNet.services.UserService;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 @RestController
 @CrossOrigin
 @RequestMapping("/user")
 public class UserController {
+
+    private final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator + "uploads/profile" + File.separator;
 
     @Autowired
     private UserService userService;
@@ -25,13 +35,14 @@ public class UserController {
         return new ResponseEntity<>(userService.getAllUser(),HttpStatus.OK);
     }
 
-    @GetMapping("id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id){
+    @GetMapping("/{id}/profile")
+    public ResponseEntity<?> getUserById(@PathVariable String id){
+        System.out.println("synchronizing the details");
         Optional<User> user=userService.getUserById(id);
         if(user.isPresent()){
             return new ResponseEntity<>(user.get(),HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new JobNetResponse("user not found with id: "+id,HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND);
     }
 
     @PostMapping("username/{username}")
@@ -156,5 +167,29 @@ public class UserController {
             return new ResponseEntity<>("User or job not found", HttpStatus.NOT_FOUND);
         }
     }
+
+    @PatchMapping("id/{id}/update-basic-details")
+    public ResponseEntity<?> updateBasicDetails(@PathVariable String id,@RequestBody User user){
+        System.out.println("got id : "+id+", user= "+user);
+        if(user==null || user.getBasicDetails()==null){
+            return new ResponseEntity<>(new JobNetResponse("User basic details missing",HttpStatus.BAD_REQUEST.value()),HttpStatus.BAD_REQUEST);
+        }
+        Optional<User> userBox=userService.getUserById(id);
+        if(userBox.isPresent()){
+            User existingUser=userBox.get();
+            System.out.println("existing user basic details(before): "+existingUser.getBasicDetails());
+            existingUser=user;
+            userService.saveUser(existingUser);
+            System.out.println("existing user basic details(after): "+existingUser.getBasicDetails());
+            if(existingUser.getBasicDetails()!=null){
+                return new ResponseEntity<>(new JobNetResponse("Basic Details Updated Successfully",HttpStatus.OK.value()),HttpStatus.OK);
+            }else {
+                return new ResponseEntity<>(new JobNetResponse("Basic Details not updated Successfully",HttpStatus.INTERNAL_SERVER_ERROR.value()),HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }else {
+            return new ResponseEntity<>(new JobNetResponse("User not found ",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND);
+        }
+    }
+
 
 }
