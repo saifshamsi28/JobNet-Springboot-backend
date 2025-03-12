@@ -191,5 +191,81 @@ public class UserController {
         }
     }
 
+    @PostMapping("{id}/upload-profile-image")
+    public ResponseEntity<?> uploadProfileImage(@PathVariable String id, @RequestParam("file") MultipartFile file) {
+        System.out.println("received request with id: "+id+", file: "+file.getOriginalFilename());
+        try {
+            Optional<User> userBox = userService.getUserById(id);
+            if (userBox.isPresent()) {
+                System.out.println("received request with id: "+id+", file: "+file.getOriginalFilename());
+                User user = userBox.get();
+
+                // Convert MultipartFile to File
+                File convertedFile = convertMultipartFileToFile(file);
+
+                // Upload to Supabase
+                SupabaseStorageService supabaseStorageService = new SupabaseStorageService();
+                String profileImageUrl = supabaseStorageService.uploadToSupabase(file.getOriginalFilename(), convertedFile, "profile");
+
+                // Update user's profile image URL
+                user.setProfileImage(profileImageUrl);
+                userService.saveUser(user);
+
+                return ResponseEntity.ok(user);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new JobNetResponse("User not found", HttpStatus.NOT_FOUND.value()));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to upload image: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("{id}/upload-profile-chunk")
+    public ResponseEntity<?> uploadProfileImageChunk(
+            @PathVariable String id,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("chunkIndex") int chunkIndex,
+            @RequestParam("totalChunks") int totalChunks) {
+
+        System.out.println("received: id="+id+", chunkIndex: "+chunkIndex+", totalChunks: "+totalChunks);
+        try {
+            Optional<User> userBox = userService.getUserById(id);
+            if (userBox.isPresent()) {
+                File tempFile = new File("uploads/profile_" + id + "_" + chunkIndex + ".tmp");
+                file.transferTo(tempFile);
+
+                // If last chunk, merge all chunks
+                if (chunkIndex == totalChunks - 1) {
+                    File finalFile = new File("uploads/profile_" + id + ".jpg");
+                    FileOutputStream outputStream = new FileOutputStream(finalFile, true);
+
+                    for (int i = 0; i < totalChunks; i++) {
+                        File chunk = new File("uploads/profile_" + id + "_" + i + ".tmp");
+                        Files.copy(chunk.toPath(), outputStream);
+                        chunk.delete();
+                    }
+                    outputStream.close();
+                    return ResponseEntity.ok("Profile picture uploaded successfully.");
+                }
+
+                return ResponseEntity.ok("Chunk " + chunkIndex + " uploaded.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed.");
+        }
+    }
+
+    // Convert MultipartFile to File
+    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
+        File convFile = File.createTempFile("profile", multipartFile.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convFile)) {
+            fos.write(multipartFile.getBytes());
+        }
+        return convFile;
+    }
 
 }
