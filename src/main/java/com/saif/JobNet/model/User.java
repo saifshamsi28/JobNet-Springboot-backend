@@ -6,6 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ public class User {
     private String email;
     @NonNull
     private String password;
+    private String profileImage;
     private String phoneNumber;
     private boolean isResumeUploaded;
     private String resumeUrl;
@@ -32,9 +34,11 @@ public class User {
     private String resumeUploadDate;
     private String resumeSize;
 
-
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();
+
+    @Field("basic_details") // Embedded document
+    private BasicDetails basicDetails;
 
     public void addOrRemoveJobToUser(Job job) {
         boolean found = false;
