@@ -1,5 +1,6 @@
 package com.saif.JobNet.services;
 
+import com.saif.JobNet.model.JobNetResponse;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class SupabaseStorageService {
     private final String SUPABASE_PROFILE_BUCKET = System.getenv("SUPABASE_PROFILE_BUCKET");
     private final String SUPABASE_SERVICE_ROLE_KEY = System.getenv("SUPABASE_SERVICE_ROLE_KEY");
 
-    public String uploadToSupabase(String fileName, File file,String fileType) throws IOException {
+    public JobNetResponse uploadToSupabase(String fileName, File file, String fileType) throws IOException {
         String uploadUrl;
         if(fileType.contains("resume"))
             uploadUrl= SUPABASE_URL + "/storage/v1/object/" + SUPABASE_RESUME_BUCKET + "/" + fileName;
@@ -40,7 +41,7 @@ public class SupabaseStorageService {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.PUT, requestEntity, String.class);
 
         String uploadedUrl;
         if (response.getStatusCode() == HttpStatus.OK) {
@@ -49,10 +50,10 @@ public class SupabaseStorageService {
             else
                 uploadedUrl = SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_PROFILE_BUCKET + "/" + fileName;
             System.out.println("Upload successful: " + uploadedUrl);
-            return uploadedUrl;
+            return new JobNetResponse(uploadedUrl,HttpStatus.OK.value());
         } else {
             System.err.println("Supabase upload failed: " + response.getBody());
-            throw new IOException("Failed to upload to Supabase: " + response.getBody());
+            return new JobNetResponse("Failed to upload to Supabase: " + response.getBody(), response.getStatusCode().value());
         }
     }
 }
