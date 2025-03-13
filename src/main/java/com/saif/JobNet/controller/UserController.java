@@ -11,9 +11,7 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -204,12 +202,12 @@ public class UserController {
                 File convertedFile = convertMultipartFileToFile(file);
 
                 // Upload to Supabase
-                SupabaseStorageService supabaseStorageService = new SupabaseStorageService();
-                String profileImageUrl = supabaseStorageService.uploadToSupabase(file.getOriginalFilename(), convertedFile, "profile");
+//                SupabaseStorageService supabaseStorageService = new SupabaseStorageService();
+//                String profileImageUrl = supabaseStorageService.uploadToSupabase(file.getOriginalFilename(), convertedFile, "profile");
 
                 // Update user's profile image URL
-                user.setProfileImage(profileImageUrl);
-                userService.saveUser(user);
+//                user.setProfileImage(profileImageUrl);
+//                userService.saveUser(user);
 
                 return ResponseEntity.ok(user);
             } else {
@@ -222,6 +220,123 @@ public class UserController {
         }
     }
 
+//    @PostMapping("{id}/upload-profile-chunk")
+//    public ResponseEntity<?> uploadProfileImageChunk(
+//            @PathVariable String id,
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("chunkIndex") int chunkIndex,
+//            @RequestParam("totalChunks") int totalChunks) {
+//
+//        System.out.println("Received chunk: id=" + id + ", file=" + file.getOriginalFilename() +
+//                ", chunkIndex=" + chunkIndex + "/" + totalChunks +
+//                ", Size: " + file.getSize() + " bytes");
+//
+//        // Check if user exists
+//        Optional<User> userBox = userService.getUserById(id);
+//        if (userBox.isEmpty()) {
+//            System.err.println("Error: User not found with ID " + id);
+//            return new ResponseEntity<>(new JobNetResponse("User not found", HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
+//        }
+//
+//        // Get the original file extension
+//        String originalFilename = file.getOriginalFilename();
+//        String fileExtension = (originalFilename != null && originalFilename.contains("."))
+//                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+//                : ".jpg"; // Default to .jpg if no extension is found
+//
+//        // Ensure fileExtension is valid
+//        if (!fileExtension.matches("\\.(jpg|jpeg|png|webp|bmp|gif)")) {
+//            System.err.println("Error: Unsupported file type: " + fileExtension);
+//            return new ResponseEntity<>(new JobNetResponse("Unsupported file type: " + fileExtension, HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
+//        }
+//
+//        // Ensure user directory exists
+//        File userDir = new File(UPLOAD_DIR+ File.separator  + id);
+//        if (!userDir.exists() && !userDir.mkdirs()) {
+//            userDir = new File(UPLOAD_DIR + File.separator + id);
+//            System.out.println("user dir not found created one user dir");
+//        }
+//        if (!userDir.exists() && !userDir.mkdirs()){
+//            System.err.println("Error: Failed to create user directory " + userDir.getAbsolutePath());
+//            return new ResponseEntity<>(new JobNetResponse("Failed to create user directory", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//
+//        // Store chunk
+//        File chunkFile = new File(userDir, "profile_" + id + "_" + chunkIndex + ".tmp");
+//        try {
+//            file.transferTo(chunkFile);
+//            System.out.println("Chunk " + chunkIndex + " saved at " + chunkFile.getAbsolutePath() +
+//                    " (Size: " + chunkFile.length() + " bytes)");
+//        } catch (IOException e) {
+//            System.err.println("Error: Failed to save chunk " + chunkIndex + " - " + e.getMessage());
+//            return new ResponseEntity<>(new JobNetResponse("Error saving chunk: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//
+//        // If last chunk, merge all chunks
+//        if (chunkIndex == totalChunks - 1) {
+//            File finalFile = new File(userDir, "profile_" + id + fileExtension);
+//
+//            try (FileOutputStream fos = new FileOutputStream(finalFile, true);
+//                 BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
+//
+//                for (int i = 0; i < totalChunks; i++) {
+//                    File chunk = new File(userDir, "profile_" + id + "_" + i + ".tmp");
+//                    if (!chunk.exists()) {
+//                        System.err.println("Error: Missing chunk " + i);
+//                        return new ResponseEntity<>(new JobNetResponse("Missing chunk: " + i, HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+//                    }
+//
+//                    // Merge chunk
+//                    try (FileInputStream fis = new FileInputStream(chunk);
+//                         BufferedInputStream chunkStream = new BufferedInputStream(fis)) {
+//
+//                        byte[] buffer = new byte[8192];
+//                        int bytesRead;
+//                        while ((bytesRead = chunkStream.read(buffer)) != -1) {
+//                            mergingStream.write(buffer, 0, bytesRead);
+//                        }
+//                    }
+//
+//                    // Delete chunk after merging
+//                    if (!chunk.delete()) {
+//                        System.err.println("Warning: Failed to delete chunk " + chunk.getName());
+//                    }
+//                }
+//
+//                System.out.println("Profile image successfully merged: " + finalFile.getAbsolutePath());
+//
+//            } catch (IOException e) {
+//                System.err.println("Error: Failed to merge chunks - " + e.getMessage());
+//                return new ResponseEntity<>(new JobNetResponse("Error merging chunks: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+//            }
+//
+//            // Update user profile image URL
+//            User user = userBox.get();
+////            String profileImageUrl = "https://your-storage-url.com/uploads/profile/" + id + ".jpg"; // Change to your actual storage location
+//            SupabaseStorageService storageService=new SupabaseStorageService();
+//            JobNetResponse supabaseResponse = null;
+//            System.out.println("final file name: "+finalFile.getName());
+//            try {
+//                supabaseResponse = storageService.uploadToSupabase(finalFile.getName(), finalFile,"profile");
+//                if(supabaseResponse!=null && supabaseResponse.getStatus()==200){
+//                    user.setProfileImage(supabaseResponse.getMessage());
+//                    userService.saveUser(user);
+//                    System.out.println("Profile image uploaded successfully: " + supabaseResponse);
+//                    return new ResponseEntity<>(supabaseResponse, HttpStatus.OK);
+//                }else {
+//                    System.err.println("supabase response: "+supabaseResponse);
+//                    return new ResponseEntity<>(supabaseResponse,HttpStatus.BAD_REQUEST);
+//                }
+//            } catch (IOException e) {
+//                System.err.println("error uploading on supabase: "+e.getMessage());
+//                return new ResponseEntity<>(new JobNetResponse("error uploading on supabase: "+e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+//            }
+//        }
+//
+//        System.out.println("Chunk " + chunkIndex + " uploaded successfully.");
+//        return new ResponseEntity<>(new JobNetResponse("Chunk " + chunkIndex + " uploaded successfully.", HttpStatus.OK.value()), HttpStatus.OK);
+//    }
+
     @PostMapping("{id}/upload-profile-chunk")
     public ResponseEntity<?> uploadProfileImageChunk(
             @PathVariable String id,
@@ -229,35 +344,147 @@ public class UserController {
             @RequestParam("chunkIndex") int chunkIndex,
             @RequestParam("totalChunks") int totalChunks) {
 
-        System.out.println("received: id="+id+", chunkIndex: "+chunkIndex+", totalChunks: "+totalChunks);
-        try {
-            Optional<User> userBox = userService.getUserById(id);
-            if (userBox.isPresent()) {
-                File tempFile = new File("uploads/profile_" + id + "_" + chunkIndex + ".tmp");
-                file.transferTo(tempFile);
+        System.out.println("Received chunk: id=" + id + ", chunkIndex=" + chunkIndex + "/" + totalChunks +
+                ", Size: " + file.getSize() + " bytes");
 
-                // If last chunk, merge all chunks
-                if (chunkIndex == totalChunks - 1) {
-                    File finalFile = new File("uploads/profile_" + id + ".jpg");
-                    FileOutputStream outputStream = new FileOutputStream(finalFile, true);
-
-                    for (int i = 0; i < totalChunks; i++) {
-                        File chunk = new File("uploads/profile_" + id + "_" + i + ".tmp");
-                        Files.copy(chunk.toPath(), outputStream);
-                        chunk.delete();
-                    }
-                    outputStream.close();
-                    return ResponseEntity.ok("Profile picture uploaded successfully.");
-                }
-
-                return ResponseEntity.ok("Chunk " + chunkIndex + " uploaded.");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Upload failed.");
+        // Validate user
+        Optional<User> userBox = userService.getUserById(id);
+        if (userBox.isEmpty()) {
+            return new ResponseEntity<>(new JobNetResponse("User not found", HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
         }
+
+        // Validate file extension
+        String originalFilename = file.getOriginalFilename();
+        String fileExtension = (originalFilename != null && originalFilename.contains("."))
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : ".jpg"; // Default to .jpg
+
+        if (!fileExtension.matches("\\.(jpg|jpeg|png|webp|bmp|gif)")) {
+            return new ResponseEntity<>(new JobNetResponse("Unsupported file type: " + fileExtension, HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
+        }
+
+        // Ensure user directory exists
+        File userDir = new File(UPLOAD_DIR + File.separator + id);
+        if (!userDir.exists() && !userDir.mkdirs()) {
+            System.err.println("failed to create user directory");
+            return new ResponseEntity<>(new JobNetResponse("Failed to create user directory", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // Save the chunk
+        File chunkFile = new File(userDir, chunkIndex + ".part");
+        try {
+            file.transferTo(chunkFile);
+        } catch (IOException e) {
+            return new ResponseEntity<>(new JobNetResponse("Error saving chunk: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        File chunkTrackerFile = new File(userDir, "chunks_received.txt");
+        Set<Integer> receivedChunks = new HashSet<>();
+
+        // Read existing received chunks
+        if (chunkTrackerFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(chunkTrackerFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty()) {
+                        receivedChunks.add(Integer.parseInt(line));
+                    }
+                }
+            } catch (IOException e) {
+                return new ResponseEntity<>(new JobNetResponse("Error reading chunk tracker", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        // Add current chunk to tracker
+        receivedChunks.add(chunkIndex);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(chunkTrackerFile))) {
+            for (int receivedChunk : receivedChunks) {
+                bw.write(receivedChunk + "\n");
+            }
+        } catch (IOException e) {
+            return new ResponseEntity<>(new JobNetResponse("Error updating chunk tracker", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        // **Check if all chunks are received**
+        if (receivedChunks.size() == totalChunks) {
+            System.out.println("All chunks received. Starting merge...");
+
+            File finalFile = new File(userDir, "profile_" + id + fileExtension);
+            if (mergeChunks(userDir, totalChunks, finalFile)) {
+                System.out.println("Profile image successfully merged: " + finalFile.getAbsolutePath());
+
+                // Upload to Supabase
+                User user = userBox.get();
+                SupabaseStorageService storageService = new SupabaseStorageService();
+                try {
+                    JobNetResponse supabaseResponse = storageService.uploadToSupabase(finalFile.getName(), finalFile, "profile");
+                    if (supabaseResponse != null && supabaseResponse.getStatus() == 200) {
+                        String cacheBusterUrl= supabaseResponse.getMessage()+"?t=" + System.currentTimeMillis();
+                        user.setProfileImage(cacheBusterUrl);
+                        userService.saveUser(user);
+
+                        if(!finalFile.delete())
+                            System.err.println("final file is not deleted");
+                        else
+                            System.out.println("final file deleted successfully");
+
+                        if(!userDir.delete()) {
+                            System.err.println("user dir is not deleted");
+                        }else
+                            System.out.println("user dir deleted successfully");
+
+                        return new ResponseEntity<>(supabaseResponse, HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(supabaseResponse, HttpStatus.BAD_REQUEST);
+                    }
+                } catch (IOException e) {
+                    return new ResponseEntity<>(new JobNetResponse("Error uploading to Supabase: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            } else {
+                return new ResponseEntity<>(new JobNetResponse("Error merging chunks", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        return new ResponseEntity<>(new JobNetResponse("Chunk " + chunkIndex + " uploaded successfully.", HttpStatus.OK.value()), HttpStatus.OK);
     }
+
+    /**
+     * Merge all received chunks in order
+     */
+    private boolean mergeChunks(File userDir, int totalChunks, File outputFile) {
+        File[] chunkFiles = userDir.listFiles((dir, name) -> name.endsWith(".part"));
+
+        if (chunkFiles == null || chunkFiles.length != totalChunks) {
+            System.out.println("Not all chunks received yet. Waiting...");
+            return false;
+        }
+
+        // Sort chunks by index
+        Arrays.sort(chunkFiles, Comparator.comparingInt(f -> Integer.parseInt(f.getName().replace(".part", ""))));
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile, true);
+             BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
+
+            for (File chunk : chunkFiles) {
+                try (FileInputStream fis = new FileInputStream(chunk);
+                     BufferedInputStream chunkStream = new BufferedInputStream(fis)) {
+
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = chunkStream.read(buffer)) != -1) {
+                        mergingStream.write(buffer, 0, bytesRead);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error merging chunks: " + e.getMessage());
+            return false;
+        }
+
+        return true;
+    }
+
 
     // Convert MultipartFile to File
     private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
