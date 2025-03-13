@@ -366,7 +366,14 @@ public class UserController {
         // Ensure user directory exists
         File userDir = new File(UPLOAD_DIR + File.separator + id);
         if (!userDir.exists() && !userDir.mkdirs()) {
-            System.err.println("failed to create user directory");
+            System.err.println("failed to create user directory, creating again");
+            userDir = new File(UPLOAD_DIR + File.separator + id);
+            if(userDir.exists()){
+                System.out.println("user dir created successfully");
+            }
+        }
+        if (!userDir.exists() && !userDir.mkdirs()) {
+            System.err.println("failed to create user directory, returning error");
             return new ResponseEntity<>(new JobNetResponse("Failed to create user directory", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -378,10 +385,11 @@ public class UserController {
             return new ResponseEntity<>(new JobNetResponse("Error saving chunk: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        // Track received chunks
         File chunkTrackerFile = new File(userDir, "chunks_received.txt");
         Set<Integer> receivedChunks = new HashSet<>();
 
-        // Read existing received chunks
+        // Read existing chunks from the file
         if (chunkTrackerFile.exists()) {
             try (BufferedReader br = new BufferedReader(new FileReader(chunkTrackerFile))) {
                 String line;
@@ -396,17 +404,18 @@ public class UserController {
             }
         }
 
-        // Add current chunk to tracker
-        receivedChunks.add(chunkIndex);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(chunkTrackerFile))) {
-            for (int receivedChunk : receivedChunks) {
-                bw.write(receivedChunk + "\n");
+        // Add the current chunk if not already present
+        if (!receivedChunks.contains(chunkIndex)) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(chunkTrackerFile, true))) {
+                bw.write(chunkIndex + "\n"); // Append instead of overwriting
+                bw.flush(); // Ensure data is written immediately
+            } catch (IOException e) {
+                return new ResponseEntity<>(new JobNetResponse("Error updating chunk tracker", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        } catch (IOException e) {
-            return new ResponseEntity<>(new JobNetResponse("Error updating chunk tracker", HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // **Check if all chunks are received**
+        // Check if all chunks are received
+        receivedChunks.add(chunkIndex); // Add current chunk in the set
         if (receivedChunks.size() == totalChunks) {
             System.out.println("All chunks received. Starting merge...");
 
@@ -414,25 +423,33 @@ public class UserController {
             if (mergeChunks(userDir, totalChunks, finalFile)) {
                 System.out.println("Profile image successfully merged: " + finalFile.getAbsolutePath());
 
+                if (chunkTrackerFile.delete()) {
+                    System.out.println("Chunk tracker deleted: " + chunkTrackerFile.getName());
+                } else {
+                    System.err.println("Failed to delete chunk tracker: " + chunkTrackerFile.getName());
+                }
+
                 // Upload to Supabase
                 User user = userBox.get();
                 SupabaseStorageService storageService = new SupabaseStorageService();
                 try {
                     JobNetResponse supabaseResponse = storageService.uploadToSupabase(finalFile.getName(), finalFile, "profile");
                     if (supabaseResponse != null && supabaseResponse.getStatus() == 200) {
-                        String cacheBusterUrl= supabaseResponse.getMessage()+"?t=" + System.currentTimeMillis();
+                        String cacheBusterUrl = supabaseResponse.getMessage() + "?t=" + System.currentTimeMillis();
                         user.setProfileImage(cacheBusterUrl);
                         userService.saveUser(user);
 
-                        if(!finalFile.delete())
-                            System.err.println("final file is not deleted");
-                        else
-                            System.out.println("final file deleted successfully");
+                        if (!finalFile.delete()) {
+                            System.err.println("Final file is not deleted");
+                        } else {
+                            System.out.println("Final file deleted successfully");
+                        }
 
-                        if(!userDir.delete()) {
-                            System.err.println("user dir is not deleted");
-                        }else
-                            System.out.println("user dir deleted successfully");
+                        if (!userDir.delete()) {
+                            System.err.println("User dir is not deleted");
+                        } else {
+                            System.out.println("User dir deleted successfully");
+                        }
 
                         return new ResponseEntity<>(supabaseResponse, HttpStatus.OK);
                     } else {
@@ -448,6 +465,8 @@ public class UserController {
 
         return new ResponseEntity<>(new JobNetResponse("Chunk " + chunkIndex + " uploaded successfully.", HttpStatus.OK.value()), HttpStatus.OK);
     }
+
+
 
     /**
      * Merge all received chunks in order
@@ -476,6 +495,11 @@ public class UserController {
                         mergingStream.write(buffer, 0, bytesRead);
                     }
                 }
+                if(chunk.delete()){
+                    System.out.println("chunk "+chunk.getName()+" deleted successfully");
+                }else {
+                    System.err.println("Failed to delete: "+chunk.getName());
+                }
             }
         } catch (IOException e) {
             System.err.println("Error merging chunks: " + e.getMessage());
@@ -484,7 +508,6 @@ public class UserController {
 
         return true;
     }
-
 
     // Convert MultipartFile to File
     private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
