@@ -1,5 +1,6 @@
 package com.saif.JobNet.controller;
 
+import com.saif.JobNet.model.JobNetResponse;
 import com.saif.JobNet.model.ResumeResponseEntity;
 import com.saif.JobNet.model.Resume;
 import com.saif.JobNet.model.User;
@@ -23,11 +24,6 @@ import java.util.Optional;
 public class ResumeController {
 
     private final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator + "uploads" + File.separator;
-
-    private final String SUPABASE_URL = System.getenv("SUPABASE_URL");
-    private final String SUPABASE_BUCKET = System.getenv("SUPABASE_BUCKET");
-    private final String SUPABASE_SERVICE_ROLE_KEY = System.getenv("SUPABASE_SERVICE_ROLE_KEY");
-
     @Autowired
     private UserService userService;
 
@@ -138,12 +134,12 @@ public class ResumeController {
         System.out.println("Merged all chunks successfully: " + finalFile.getAbsolutePath());
 
         String uniqueFileName = userService.generateUniqueFileName(resumeName);
-        String supabaseUploadedFileUrl;
+        JobNetResponse supabaseResponse;
         try {
             SupabaseStorageService supabaseStorageService=new SupabaseStorageService();
 //            supabaseUploadedFileUrl = uploadToSupabase(uniqueFileName, finalFile);
-            supabaseUploadedFileUrl=supabaseStorageService.uploadToSupabase(uniqueFileName,finalFile,"resume");
-            System.out.println("Uploaded file to Supabase: " + supabaseUploadedFileUrl);
+            supabaseResponse=supabaseStorageService.uploadToSupabase(uniqueFileName,finalFile,"resume");
+            System.out.println("Uploaded file to Supabase: " + supabaseResponse);
         } catch (IOException e) {
             return new ResponseEntity<>(new ResumeResponseEntity("Error uploading to Supabase: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -164,7 +160,7 @@ public class ResumeController {
         user.setResumeUploaded(true);
         user.setResumeName(resumeName);
         user.setResumeUploadDate(resumeDate);
-        user.setResumeUrl(supabaseUploadedFileUrl);
+        user.setResumeUrl(supabaseResponse.getMessage());
         user.setResumeSize(resumeSize);
 
         //save updated user to database
@@ -176,7 +172,7 @@ public class ResumeController {
         resume.setResumeName(resumeName);
         resume.setResumeUploadDate(resumeDate);
         resume.setResumeSize(resumeSize);
-        resume.setResumeUrl(supabaseUploadedFileUrl);
+        resume.setResumeUrl(supabaseResponse.getMessage());
 
 
         return new ResponseEntity<>(resume, HttpStatus.OK);
