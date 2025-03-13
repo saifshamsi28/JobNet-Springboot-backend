@@ -133,12 +133,11 @@ public class ResumeController {
 
         System.out.println("Merged all chunks successfully: " + finalFile.getAbsolutePath());
 
-        String uniqueFileName = userService.generateUniqueFileName(resumeName);
         JobNetResponse supabaseResponse;
         try {
             SupabaseStorageService supabaseStorageService=new SupabaseStorageService();
 //            supabaseUploadedFileUrl = uploadToSupabase(uniqueFileName, finalFile);
-            supabaseResponse=supabaseStorageService.uploadToSupabase(uniqueFileName,finalFile,"resume");
+            supabaseResponse=supabaseStorageService.uploadToSupabase(finalFile.getName(),finalFile,"resume");
             System.out.println("Uploaded file to Supabase: " + supabaseResponse);
         } catch (IOException e) {
             return new ResponseEntity<>(new ResumeResponseEntity("Error uploading to Supabase: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -177,35 +176,5 @@ public class ResumeController {
 
         return new ResponseEntity<>(resume, HttpStatus.OK);
     }
-
-//    private String uploadToSupabase(String fileName, File file) throws IOException {
-//        String uploadUrl = SUPABASE_URL + "/storage/v1/object/" + SUPABASE_BUCKET + "/" + fileName;
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set("Authorization", "Bearer " + SUPABASE_SERVICE_ROLE_KEY);
-//        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-//
-//        LinkedMultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("file", new ByteArrayResource(Files.readAllBytes(file.toPath())) {
-//            @Override
-//            public String getFilename() {
-//                return file.getName();
-//            }
-//        });
-//
-//        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//
-//        RestTemplate restTemplate = new RestTemplate();
-//
-//        ResponseEntity<String> response = restTemplate.exchange(uploadUrl, HttpMethod.POST, requestEntity, String.class);
-//
-//        if (response.getStatusCode() == HttpStatus.OK) {
-//            String uploadedUrl = SUPABASE_URL + "/storage/v1/object/public/" + SUPABASE_BUCKET + "/" + fileName;
-//            System.out.println("Upload successful: " + uploadedUrl);
-//            return uploadedUrl;
-//        } else {
-//            System.err.println("Supabase upload failed: " + response.getBody());
-//            throw new IOException("Failed to upload to Supabase: " + response.getBody());
-//        }
-//    }
 
 }
