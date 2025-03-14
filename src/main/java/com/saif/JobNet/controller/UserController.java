@@ -189,38 +189,6 @@ public class UserController {
         }
     }
 
-    @PostMapping("{id}/upload-profile-image")
-    public ResponseEntity<?> uploadProfileImage(@PathVariable String id, @RequestParam("file") MultipartFile file) {
-        System.out.println("received request with id: "+id+", file: "+file.getOriginalFilename());
-        try {
-            Optional<User> userBox = userService.getUserById(id);
-            if (userBox.isPresent()) {
-                System.out.println("received request with id: "+id+", file: "+file.getOriginalFilename());
-                User user = userBox.get();
-
-                // Convert MultipartFile to File
-                File convertedFile = convertMultipartFileToFile(file);
-
-                // Upload to Supabase
-//                SupabaseStorageService supabaseStorageService = new SupabaseStorageService();
-//                String profileImageUrl = supabaseStorageService.uploadToSupabase(file.getOriginalFilename(), convertedFile, "profile");
-
-                // Update user's profile image URL
-//                user.setProfileImage(profileImageUrl);
-//                userService.saveUser(user);
-
-                return ResponseEntity.ok(user);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new JobNetResponse("User not found", HttpStatus.NOT_FOUND.value()));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload image: " + e.getMessage());
-        }
-    }
-
-
     @PostMapping("{id}/upload-profile-chunk")
     public ResponseEntity<?> uploadProfileImageChunk(
             @PathVariable String id,
