@@ -1,18 +1,15 @@
 package com.saif.JobNet.controller;
 
-import ch.qos.logback.core.util.FileUtil;
 import com.saif.JobNet.model.*;
 import com.saif.JobNet.services.JobsService;
 import com.saif.JobNet.services.SupabaseStorageService;
 import com.saif.JobNet.services.UserService;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.*;
 
 @RestController
@@ -209,7 +206,7 @@ public class UserController {
         String originalFilename = file.getOriginalFilename();
         String fileExtension = (originalFilename != null && originalFilename.contains("."))
                 ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : ".jpg"; // Default to .jpg
+                : ".jpg";
 
         if (!fileExtension.matches("\\.(jpg|jpeg|png|webp|bmp|gif)")) {
             return new ResponseEntity<>(new JobNetResponse("Unsupported file type: " + fileExtension, HttpStatus.BAD_REQUEST.value()), HttpStatus.BAD_REQUEST);
@@ -318,11 +315,6 @@ public class UserController {
         return new ResponseEntity<>(new JobNetResponse("Chunk " + chunkIndex + " uploaded successfully.", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
-
-
-    /**
-     * Merge all received chunks in order
-     */
     private boolean mergeChunks(File userDir, int totalChunks, File outputFile) {
         File[] chunkFiles = userDir.listFiles((dir, name) -> name.endsWith(".part"));
 
@@ -360,14 +352,4 @@ public class UserController {
 
         return true;
     }
-
-    // Convert MultipartFile to File
-    private File convertMultipartFileToFile(MultipartFile multipartFile) throws IOException {
-        File convFile = File.createTempFile("profile", multipartFile.getOriginalFilename());
-        try (FileOutputStream fos = new FileOutputStream(convFile)) {
-            fos.write(multipartFile.getBytes());
-        }
-        return convFile;
-    }
-
 }
