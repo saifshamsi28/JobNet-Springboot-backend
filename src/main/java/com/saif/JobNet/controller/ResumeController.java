@@ -152,22 +152,17 @@ public class ResumeController {
 
         //update user with resume details
         User user=userBox.get();
-        user.setResumeUploaded(true);
-        user.setResumeName(resumeName);
-        user.setResumeUploadDate(resumeDate);
-        user.setResumeUrl(supabaseResponse.getMessage());
-        user.setResumeSize(resumeSize);
-
-        //save updated user to database
-        userService.saveUser(user);
 
         // prepare resume response
         Resume resume = new Resume();
-        resume.setUserId(userId);
         resume.setResumeName(resumeName);
         resume.setResumeUploadDate(resumeDate);
         resume.setResumeSize(resumeSize);
         resume.setResumeUrl(supabaseResponse.getMessage());
+
+        //save updated user to database
+        user.setResume(resume);
+        userService.saveUser(user);
 
 
         return new ResponseEntity<>(resume, HttpStatus.OK);

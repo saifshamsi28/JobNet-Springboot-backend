@@ -1,5 +1,8 @@
 package com.saif.JobNet.model;
 
+import com.saif.JobNet.model.education.Class10Details;
+import com.saif.JobNet.model.education.Class12Details;
+import com.saif.JobNet.model.education.GraduationDetails;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
@@ -28,17 +31,22 @@ public class User {
     private String password;
     private String profileImage;
     private String phoneNumber;
-    private boolean isResumeUploaded;
-    private String resumeUrl;
-    private String resumeName;
-    private String resumeUploadDate;
-    private String resumeSize;
+    private Resume resume;
 
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();
 
     @Field("basic_details") // Embedded document
     private BasicDetails basicDetails;
+
+    @Field("graduation_details")
+    private GraduationDetails graduationDetails;
+
+    @Field("class12th_details")
+    private Class12Details class12Details;
+
+    @Field("class10th_details")
+    private Class10Details class10Details;
 
     public void addOrRemoveJobToUser(Job job) {
         boolean found = false;

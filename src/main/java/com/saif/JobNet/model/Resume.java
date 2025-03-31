@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class Resume {
-    private String userId;
     private String resumeName;
     private String resumeUrl;
     private String resumeUploadDate;
