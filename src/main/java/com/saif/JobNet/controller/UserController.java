@@ -56,7 +56,6 @@ public class UserController {
                 .body(available);
     }
 
-
     @PostMapping
     public ResponseEntity<?> saveUser(@RequestBody User user){
         System.out.println("we got the user : "+user.getName()+" username: "+user.getUserName());
@@ -183,6 +182,39 @@ public class UserController {
             }
         }else {
             return new ResponseEntity<>(new JobNetResponse("User not found ",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("id/{id}/update-education-details")
+    public ResponseEntity<?> updateEducationDetails(@PathVariable String id,
+                                                    @RequestParam("education_level") String educationLevel,
+                                                    @RequestBody User user){
+        System.out.println("adding education level: "+educationLevel);
+        Optional<User> userBox=userService.getUserById(id);
+        if(userBox.isPresent()){
+            try {
+                User existingUser=userBox.get();
+                if(educationLevel.contains("graduation")){
+//                    System.out.println("saved details: "+sa);
+                    existingUser.setGraduationDetails(user.getGraduationDetails());
+                }
+
+                if(educationLevel.contains("12th")){
+                    existingUser.setClass12Details(user.getClass12Details());
+                }
+
+                if(educationLevel.contains("10th")){
+                    existingUser.setClass10Details(user.getClass10Details());
+                }
+
+                userService.saveUser(existingUser);
+                return new ResponseEntity<>(new JobNetResponse("Education details saved successfully",HttpStatus.OK.value()),HttpStatus.OK);
+            }catch (Exception e){
+                System.err.println(e.getMessage());
+                return new ResponseEntity<>(new JobNetResponse(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR.value()),HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }else {
+            return new ResponseEntity<>(new JobNetResponse("user not found",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND);
         }
     }
 
