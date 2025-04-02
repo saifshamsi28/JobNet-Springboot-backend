@@ -45,7 +45,7 @@ public class AuthController {
                 return new ResponseEntity<>(user, HttpStatus.OK);
             }
         }
-        System.out.println("invalid credentials: emailOrUserName: "+credentials.getUserNameOrEmail()+", password: "+ credentials.getPassword());
+        System.out.println("invalid credentials: email or UserName: "+credentials.getUserNameOrEmail());
         return new ResponseEntity<>(new AuthResponse("Invalid credentials", HttpStatus.UNAUTHORIZED.value()),HttpStatus.UNAUTHORIZED);
     }
 }

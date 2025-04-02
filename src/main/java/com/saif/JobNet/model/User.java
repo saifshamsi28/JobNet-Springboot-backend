@@ -71,5 +71,4 @@ public class User {
             System.out.println("removing the job: " + job.getId() + " , title: " + job.getTitle());
         }
     }
-
 }

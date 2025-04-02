@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.Optional;
 
 @RestController
@@ -163,7 +162,6 @@ public class ResumeController {
         //save updated user to database
         user.setResume(resume);
         userService.saveUser(user);
-
 
         return new ResponseEntity<>(resume, HttpStatus.OK);
     }
