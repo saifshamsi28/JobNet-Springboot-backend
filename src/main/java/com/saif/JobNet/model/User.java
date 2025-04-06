@@ -48,6 +48,8 @@ public class User {
     @Field("class10th_details")
     private Class10Details class10Details;
 
+    private List<String> skills=new ArrayList<>();
+
     public void addOrRemoveJobToUser(Job job) {
         boolean found = false;
 
