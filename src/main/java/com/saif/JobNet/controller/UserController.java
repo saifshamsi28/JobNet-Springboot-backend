@@ -218,6 +218,26 @@ public class UserController {
         }
     }
 
+    @PatchMapping("/id/{id}/update-skills")
+    public JobNetResponse saveSkills(@PathVariable String id, @RequestBody List<String> skills) {
+        Optional<User> userBox = userService.getUserById(id);
+        System.out.println("skills received: "+skills);
+        if (userBox.isEmpty()) {
+            return new JobNetResponse("user not found", HttpStatus.NOT_FOUND.value());
+        } else {
+            User user = userBox.get();
+
+            // Set or update skills
+            user.setSkills(skills);
+
+            // Save updated user
+            userService.saveUser(user);
+
+            return new JobNetResponse("Skills saved successfully", HttpStatus.OK.value());
+        }
+    }
+
+
     @PostMapping("{id}/upload-profile-chunk")
     public ResponseEntity<?> uploadProfileImageChunk(
             @PathVariable String id,
