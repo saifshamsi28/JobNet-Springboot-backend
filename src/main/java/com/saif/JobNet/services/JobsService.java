@@ -200,7 +200,6 @@ public class JobsService {
         return new int[]{0, 0}; // Default if parsing fails
     }
 
-    // Run every 6 hours (example)
     @Scheduled(fixedRate = 3600000) // in milliseconds
     public void fetchJobsForMultipleRoles() {
 //        System.out.println("Running job scheduler for multiple roles...");
