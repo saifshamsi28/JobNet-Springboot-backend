@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Document(collection = "users")
@@ -53,10 +54,15 @@ public class User {
     public void addOrRemoveJobToUser(Job job) {
         boolean found = false;
 
-        // Iterate through the saved jobs and compare by ID
-        for (Job savedJob : savedJobs) {
+        // Use iterator to safely remove while iterating
+        Iterator<Job> iterator = savedJobs.iterator();
+        while (iterator.hasNext()) {
+            Job savedJob = iterator.next();
+
+            if (savedJob == null) continue; // ✅ SKIP null jobs to avoid crash
+
             if (savedJob.getId().equals(job.getId())) {
-                savedJobs.remove(savedJob);
+                iterator.remove();
                 System.out.println("Removing the job: " + job.getId() + " , title: " + job.getTitle());
                 found = true;
                 break;
@@ -65,12 +71,10 @@ public class User {
 
         if (!found) {
             savedJobs.add(job);
-//            job.setSaved(true);
             System.out.println("Adding the job: " + job.getId() + " , title: " + job.getTitle());
-        }else {
-//            savedJobs.remove(job);
-//            job.setSaved(false);
+        } else {
             System.out.println("removing the job: " + job.getId() + " , title: " + job.getTitle());
         }
     }
+
 }
