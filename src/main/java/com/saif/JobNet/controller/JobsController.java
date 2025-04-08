@@ -19,9 +19,18 @@ public class JobsController {
 
     @GetMapping
     public List<Job> getAllJobs(){
-        System.out.println("received request for home screen");
+//        System.out.println("received request for home screen");
         return jobsService.getAllJobs();
     }
+
+    @GetMapping("/jobs/new")
+    public ResponseEntity<List<Job>> getNewJobs() {
+//        System.out.println("request received in new jobs");
+//        System.out.println("fetching youtube");
+        List<Job> newJobs = jobsService.getNewJobs();
+        return ResponseEntity.ok(newJobs);
+    }
+
 
     @PostMapping
     public ResponseEntity<Map<String, String>> insertAllJob(@RequestBody List<Job> jobs){
