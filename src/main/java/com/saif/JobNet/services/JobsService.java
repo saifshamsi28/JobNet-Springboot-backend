@@ -34,7 +34,7 @@ public class JobsService {
 
     private final MongoTemplate mongoTemplate;
 
-    private String flaskUrl=System.getenv("FLASK_LOCAL_URL");
+    private String flaskUrl=System.getenv("FLASK_HOSTED_URL");
 
     private final List<String> jobRoles = List.of(
             "Software Engineer", "Data Analyst","Web Developer",
