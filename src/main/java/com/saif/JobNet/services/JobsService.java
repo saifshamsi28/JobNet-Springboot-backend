@@ -9,17 +9,17 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -34,6 +34,14 @@ public class JobsService {
 
     private final MongoTemplate mongoTemplate;
 
+    private String flaskUrl=System.getenv("FLASK_LOCAL_URL");
+
+    private final List<String> jobRoles = List.of(
+            "Software Engineer", "Data Analyst","Web Developer",
+            "Backend Developer", "Frontend Developer", "Android Developer",
+            "Machine Learning Engineer","Data Scientist","Java Developer"
+    );
+
     public JobsService(MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
@@ -41,7 +49,7 @@ public class JobsService {
     public int insertAllJob(List<Job> jobs){
         List<Job> jobsBeforeInsertedNewJobs = jobsRepository.findAll();
         for(Job job:jobs) {
-            job.setDate(LocalDateTime.now());
+            job.setDateTime(LocalDateTime.now());
             int[] salaryRange = parseSalary(job.getSalary());
             job.setMinSalary(salaryRange[0]);
             job.setMaxSalary(salaryRange[1]);
@@ -190,5 +198,50 @@ public class JobsService {
         }
 
         return new int[]{0, 0}; // Default if parsing fails
+    }
+
+    // Run every 6 hours (example)
+    @Scheduled(fixedRate = 3600000) // in milliseconds
+    public void fetchJobsForMultipleRoles() {
+//        System.out.println("Running job scheduler for multiple roles...");
+
+        for (String role : jobRoles) {
+            try {
+                String encodedRole = URLEncoder.encode(role, StandardCharsets.UTF_8);
+                String fullUrl = flaskUrl + "?job_title=" + encodedRole;
+
+                ResponseEntity<Job[]> response = restTemplate.getForEntity(fullUrl, Job[].class);
+
+                if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                    List<Job> fetchedJobs = Arrays.asList(response.getBody());
+                    int newCount = 0;
+
+                    for (Job job : fetchedJobs) {
+//                        System.out.println("\njob title: "+job.getTitle());
+//                        System.out.println("job company: "+job.getCompany());
+//                        System.out.println("job location: "+job.getLocation());
+                        if (job.getUrl() != null && jobsRepository.findByUrl(job.getUrl()) == null) {
+                            job.setDateTime(LocalDateTime.now());
+                            jobsRepository.save(job);
+                            newCount++;
+                        }
+                    }
+
+//                    System.out.println("[" + role + "] Added " + newCount + " new jobs.");
+                } else {
+                    System.err.println("[" + role + "] Failed to fetch jobs. Status: " + response.getStatusCode());
+                }
+
+            } catch (Exception e) {
+                System.err.println("[" + role + "] Error: " + e.getMessage());
+            }
+        }
+
+//        System.out.println("Scheduler cycle complete.");
+    }
+
+    public List<Job> getNewJobs() {
+        LocalDateTime yesterday = LocalDateTime.now().minusHours(6);
+        return jobsRepository.findByDateTimeAfter(yesterday);
     }
 }
