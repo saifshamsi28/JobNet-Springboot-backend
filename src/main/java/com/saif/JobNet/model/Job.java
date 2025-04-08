@@ -1,11 +1,14 @@
 package com.saif.JobNet.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 @Document(collection ="jobs")
@@ -51,7 +54,10 @@ public class Job {
     @JsonProperty("full_description")
     private String fullDescription;
 
-    private LocalDateTime date;
+    @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dateTime;
+
 
     @Override
     public boolean equals(Object o) {
