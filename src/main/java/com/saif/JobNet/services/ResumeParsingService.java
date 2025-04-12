@@ -19,7 +19,7 @@ import java.util.Map;
 public class ResumeParsingService {
 
     public static Map<String, Object> parseResumeWithFlask(File resumeFile) throws IOException {
-        // 🔁 Replace this with your actual Flask server URL
+        // Replace this with your actual Flask server URL
         String flaskUrl = "http://10.162.1.53:5000/parse-resume";
 
         HttpPost post = new HttpPost(flaskUrl);
