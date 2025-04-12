@@ -19,14 +19,11 @@ public class JobsController {
 
     @GetMapping
     public List<Job> getAllJobs(){
-//        System.out.println("received request for home screen");
         return jobsService.getAllJobs();
     }
 
     @GetMapping("/jobs/new")
     public ResponseEntity<List<Job>> getNewJobs() {
-//        System.out.println("request received in new jobs");
-//        System.out.println("fetching youtube");
         List<Job> newJobs = jobsService.getNewJobs();
         return ResponseEntity.ok(newJobs);
     }
@@ -67,9 +64,11 @@ public class JobsController {
             @RequestParam(required = false) String company,
             @RequestParam(required = false) Integer minSalary,
             @RequestParam(required = false) String jobType) {
+
         if(minSalary==null){
             minSalary=0;
         }
+
         minSalary=minSalary*100000;
         System.out.println("request received with title: "+title+", salary: "+minSalary);
 

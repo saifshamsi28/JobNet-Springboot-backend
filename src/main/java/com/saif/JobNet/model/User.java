@@ -59,7 +59,7 @@ public class User {
         while (iterator.hasNext()) {
             Job savedJob = iterator.next();
 
-            if (savedJob == null) continue; // ✅ SKIP null jobs to avoid crash
+            if (savedJob == null) continue; // SKIP null jobs to avoid crash
 
             if (savedJob.getId().equals(job.getId())) {
                 iterator.remove();

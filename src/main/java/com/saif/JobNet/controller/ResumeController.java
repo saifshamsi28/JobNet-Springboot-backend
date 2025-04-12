@@ -53,7 +53,6 @@ public class ResumeController {
 //            tempDir = new File(UPLOAD_DIR + File.separator + userId);
         }
 
-
         File chunkFile = new File(tempDir, resumeName + ".part" + chunkIndex);
         try {
             file.transferTo(chunkFile);
@@ -143,11 +142,9 @@ public class ResumeController {
             System.out.println("Deleted local merged file: " + finalFile.getAbsolutePath());
         }
 
-
         if (userDir.delete()) {
             System.out.println("Deleted user dir: " + userDir.getAbsolutePath());
         }
-
 
         //update user with resume details
         User user=userBox.get();
