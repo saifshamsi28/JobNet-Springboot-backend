@@ -127,14 +127,14 @@ public class JobsController {
 
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
-        System.out.println("id received: "+id);
+//        System.out.println("id received: "+id);
         System.out.println("url received: "+url);
         try {
             Optional<Job> jobById = jobsService.getJobById(id);
             if (jobById.isPresent()) {
                 Job job = jobById.get();
 
-                System.out.println("received request with url(in controller): \n"+url);
+//                System.out.println("received request with url(in controller): \n"+url);
 
                 String description;
                 if(job.getFullDescription()==null){

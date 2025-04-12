@@ -34,6 +34,9 @@ public class User {
     private String phoneNumber;
     private Resume resume;
 
+    @Field("parsed_details")
+    private ParsedResumeDetails parsedDetails;
+
     @DBRef
     private List<Job> savedJobs = new ArrayList<>();
 
