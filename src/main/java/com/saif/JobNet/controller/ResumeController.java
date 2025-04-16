@@ -165,13 +165,30 @@ public class ResumeController {
         resume.setResumeUrl(supabaseResponse.getMessage());
         user.setResume(resume);
 
-        //Append new skills to existing, avoid duplicates
         List<String> existingSkills = user.getSkills();
-//        List<String> newSkills = (List<String>) parsedInfo.getOrDefault("skills", new ArrayList<>());
+        List<String> parsedSkills = parsedDetails.getSkills();
 
-        Set<String> combinedSkills = new HashSet<>(existingSkills);
-        combinedSkills.addAll(parsedDetails.getSkills());
-        user.setSkills(new ArrayList<>(combinedSkills));
+        // Normalize existing skills into a map with lowercase keys for comparison
+        Map<String, String> normalizedSkillsMap = new LinkedHashMap<>();
+        for (String skill : existingSkills) {
+            normalizedSkillsMap.put(skill.toLowerCase(), skill);
+        }
+
+        // Add new parsed skills, only if not already present (case-insensitive)
+        for (String skill : parsedSkills) {
+            String normalized = skill.toLowerCase();
+
+            // Skip if similar skill already exists (like "java" vs "Java (Programming Language)")
+            boolean isDuplicate = normalizedSkillsMap.keySet().stream()
+                    .anyMatch(existing -> normalized.contains(existing) || existing.contains(normalized));
+
+            if (!isDuplicate) {
+                normalizedSkillsMap.put(normalized, skill);
+            }
+        }
+
+        // Update skills and save
+        user.setSkills(new ArrayList<>(normalizedSkillsMap.values()));
         user.setParsedDetails(parsedDetails);
         userService.saveUser(user);
 

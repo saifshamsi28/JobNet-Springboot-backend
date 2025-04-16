@@ -127,6 +127,7 @@ public class JobsService {
 
             // Construct the Flask backend URL
             String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url=" + url;
+//            String flaskEndpoint="http://10.162.1.53:5000/url?url="+url;
 
             System.out.println("Sending request to Flask: " + flaskEndpoint);
 
@@ -220,7 +221,11 @@ public class JobsService {
 //                        System.out.println("job company: "+job.getCompany());
 //                        System.out.println("job location: "+job.getLocation());
                         if (job.getUrl() != null && jobsRepository.findByUrl(job.getUrl()) == null) {
-                            job.setDateTime(LocalDateTime.now());
+                                job.setDateTime(LocalDateTime.now());
+                                int[] salaryRange = parseSalary(job.getSalary());
+                                job.setMinSalary(salaryRange[0]);
+                                job.setMaxSalary(salaryRange[1]);
+                                job.setFullDescription(null);
                             jobsRepository.save(job);
                             newCount++;
                         }
