@@ -17,17 +17,40 @@ public class JobsController {
     @Autowired
     JobsService jobsService;
 
-    @GetMapping
-    public List<Job> getAllJobs(){
-        return jobsService.getAllJobs();
+    @GetMapping("/suggested-jobs")
+    public List<Job> getSuggestedJobs(){
+        System.out.println("sending suggested jobs");
+        return jobsService.getAllJobs().subList(0,10);
     }
 
-    @GetMapping("/jobs/new")
+    @GetMapping("/recent-jobs")
+    public List<Job> getRecent(){
+        System.out.println("sending recent jobs");
+        return jobsService.getAllJobs().subList(0,10);
+    }
+
+    @GetMapping("/new-jobs")
     public ResponseEntity<List<Job>> getNewJobs() {
         List<Job> newJobs = jobsService.getNewJobs();
         return ResponseEntity.ok(newJobs);
     }
 
+    @GetMapping("/job-details")
+    public ResponseEntity<?> getJobDescription(@RequestParam("job_url") String job_url) {
+        Optional<Job> job=jobsService.getJobByUrl(job_url);
+        if(job.isPresent()) {
+            Job job1 = job.get();
+            if (job1.getFullDescription() == null || job1.getFullDescription().isEmpty() || job1.getFullDescription().length() < 100) {
+                String description = jobsService.fetchJobDescriptionFromFlask(job_url);
+                job1.setFullDescription(description);
+                jobsService.insertJob(job1);
+                return ResponseEntity.ok(job1);
+            }else if(job1.getFullDescription().length() > 100){
+                return ResponseEntity.ok(job1);
+            }
+        }
+            return ResponseEntity.notFound().build();
+    }
 
     @PostMapping
     public ResponseEntity<Map<String, String>> insertAllJob(@RequestBody List<Job> jobs){
@@ -130,7 +153,7 @@ public class JobsController {
 //        System.out.println("id received: "+id);
         System.out.println("url received: "+url);
         try {
-            Optional<Job> jobById = jobsService.getJobById(id);
+            Optional<Job> jobById = jobsService.getJobByUrl(url);
             if (jobById.isPresent()) {
                 Job job = jobById.get();
 

@@ -45,6 +45,12 @@ public class Job {
     @JsonProperty("reviews")
     private String reviews;
 
+    @JsonProperty("openings")
+    private String openings;
+
+    @JsonProperty("applicants")
+    private String applicants;
+
     @JsonProperty("post_date")
     private String post_date;
 
