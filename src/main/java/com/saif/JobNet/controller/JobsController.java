@@ -151,7 +151,7 @@ public class JobsController {
     @GetMapping("/jobs/description/{id}")
     public ResponseEntity<Job> getJobDescription(@PathVariable String id, @RequestParam String url) {
 //        System.out.println("id received: "+id);
-        System.out.println("url received: "+url);
+//        System.out.println("url received: "+url);
         try {
             Optional<Job> jobById = jobsService.getJobByUrl(url);
             if (jobById.isPresent()) {
@@ -163,7 +163,7 @@ public class JobsController {
                 if(job.getFullDescription()==null){
                     // Call Flask backend to fetch the description
                     description = jobsService.fetchJobDescriptionFromFlask(url);
-                    if(description.length()<50){
+                    if(description.length()<100){
                         job.setFullDescription(null);
                     }else {
                         job.setFullDescription(description);
