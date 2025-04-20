@@ -1,5 +1,6 @@
 package com.saif.JobNet.services;
 
+import com.saif.JobNet.NumberExtractor;
 import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.repositories.JobsRepository;
@@ -53,6 +54,25 @@ public class JobsService {
             int[] salaryRange = parseSalary(job.getSalary());
             job.setMinSalary(salaryRange[0]);
             job.setMaxSalary(salaryRange[1]);
+            String extractedReviews = NumberExtractor.extractNumber(job.getReviews());
+            if (extractedReviews != null) {
+                job.setReviews(extractedReviews);
+            }
+
+            String extractedRating = NumberExtractor.extractNumber(job.getRating());
+            if (extractedRating != null) {
+                job.setRating(extractedRating);
+            }
+
+            String extractedApplicants = NumberExtractor.extractNumber(job.getApplicants());
+            if (extractedApplicants != null) {
+                job.setApplicants(extractedApplicants);
+            }
+
+            String extractedPostDate = NumberExtractor.extractNumber(job.getPost_date());
+            if (extractedPostDate!=null) {
+                job.setPost_date(extractedPostDate);
+            }
             job.setFullDescription(null);
         }
         jobsRepository.saveAll(jobs);
@@ -121,31 +141,24 @@ public class JobsService {
             return false;  // Invalid URL
         }
     }
-    public String fetchJobDescriptionFromFlask(String url) {
+    public Job fetchJobDescriptionFromFlask(String url) {
         try {
             url = url.trim();
 
             // Construct the Flask backend URL
-            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url=" + url;
-//            String flaskEndpoint="http://10.162.1.53:5000/url?url="+url;
+//            String flaskEndpoint = "https://jobnet-flask-backend.onrender.com/url?url=" + url;
+            String flaskEndpoint="http://10.162.1.53:5000/url?url="+url;
 
             System.out.println("Sending request to Flask: " + flaskEndpoint);
 
             // Call Flask backend using RestTemplate
-            ResponseEntity<Map> response = restTemplate.getForEntity(flaskEndpoint, Map.class);
+//            ResponseEntity<Map> response = restTemplate.getForEntity(flaskEndpoint, Map.class);
+            ResponseEntity<Job> response = restTemplate.getForEntity(flaskEndpoint, Job.class);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> responseBody = response.getBody();
-                if (responseBody != null) {
-                    if (responseBody.containsKey("full_description")) {
-                        return (String) responseBody.get("full_description");
-                    } else if (responseBody.containsKey("error")) {
-                        return "Error from Flask: " + responseBody.get("error");
-                    } else {
-                        return "Unexpected response from Flask.";
-                    }
-                } else {
-                    return "Empty response from Flask.";
+                Job job = response.getBody();
+                if (job != null) {
+                    return job;
                 }
             } else {
                 throw new RuntimeException("Failed to fetch job description from Flask: " +
@@ -154,8 +167,9 @@ public class JobsService {
         } catch (Exception e) {
             // Handle exceptions gracefully
             System.err.println("Error communicating with Flask backend: " + e.getMessage());
-            return "Unable to fetch job description due to a backend issue.";
+            return null;
         }
+        return null;
     }
 
     public List<Job> getJobsByFilters(String title, Integer minSalary, String location, String company) {
@@ -217,15 +231,31 @@ public class JobsService {
                     int newCount = 0;
 
                     for (Job job : fetchedJobs) {
-//                        System.out.println("\njob title: "+job.getTitle());
-//                        System.out.println("job company: "+job.getCompany());
-//                        System.out.println("job location: "+job.getLocation());
                         if (job.getUrl() != null && jobsRepository.findByUrl(job.getUrl()) == null) {
                                 job.setDateTime(LocalDateTime.now());
                                 int[] salaryRange = parseSalary(job.getSalary());
                                 job.setMinSalary(salaryRange[0]);
                                 job.setMaxSalary(salaryRange[1]);
-                                job.setFullDescription(null);
+                            String extractedReviews = NumberExtractor.extractNumber(job.getReviews());
+                            if (extractedReviews != null) {
+                                job.setReviews(extractedReviews);
+                            }
+
+                            String extractedRating = NumberExtractor.extractNumber(job.getRating());
+                            if (extractedRating != null) {
+                                job.setRating(extractedRating);
+                            }
+
+                            String extractedApplicants = NumberExtractor.extractNumber(job.getApplicants());
+                            if (extractedApplicants != null) {
+                                job.setApplicants(extractedApplicants);
+                            }
+
+                            String extractedPostDate = NumberExtractor.extractNumber(job.getPost_date());
+                            if (extractedPostDate!=null) {
+                                job.setPost_date(extractedPostDate);
+                            }
+                            job.setFullDescription(null);
                             jobsRepository.save(job);
                             newCount++;
                         }

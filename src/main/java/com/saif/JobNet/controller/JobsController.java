@@ -1,5 +1,6 @@
 package com.saif.JobNet.controller;
 
+import com.saif.JobNet.NumberExtractor;
 import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.JobUpdateDTO;
@@ -37,16 +38,45 @@ public class JobsController {
 
     @GetMapping("/job-details")
     public ResponseEntity<?> getJobDescription(@RequestParam("job_url") String job_url) {
-        Optional<Job> job=jobsService.getJobByUrl(job_url);
-        if(job.isPresent()) {
-            Job job1 = job.get();
-            if (job1.getFullDescription() == null || job1.getFullDescription().isEmpty() || job1.getFullDescription().length() < 100) {
-                String description = jobsService.fetchJobDescriptionFromFlask(job_url);
-                job1.setFullDescription(description);
-                jobsService.insertJob(job1);
-                return ResponseEntity.ok(job1);
-            }else if(job1.getFullDescription().length() > 100){
-                return ResponseEntity.ok(job1);
+        Optional<Job> jobBox=jobsService.getJobByUrl(job_url);
+        if(jobBox.isPresent()) {
+            Job job = jobBox.get();
+            if(job.getFullDescription()==null){
+                // Call Flask backend to fetch the description
+                Job job1 = jobsService.fetchJobDescriptionFromFlask(job_url);
+                if(job1==null ){
+                    job.setFullDescription(null);
+                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                }else {
+                    if(job1.getFullDescription().length()>100) {
+                        String extractedReviews = NumberExtractor.extractNumber(job1.getReviews());
+                        if (extractedReviews != null) {
+                            job.setReviews(extractedReviews);
+                        }
+
+                        String extractedRating = NumberExtractor.extractNumber(job1.getRating());
+                        if (extractedRating != null) {
+                            job.setRating(extractedRating);
+                        }
+
+                        String extractedApplicants = NumberExtractor.extractNumber(job1.getApplicants());
+                        if (extractedApplicants != null) {
+                            job.setApplicants(extractedApplicants);
+                        }
+
+                        String extractedPostDate = NumberExtractor.extractNumber(job1.getPost_date());
+                        if (extractedPostDate!=null) {
+                            job.setPost_date(extractedPostDate);
+                        }
+
+                        job.setFullDescription(job1.getFullDescription());
+                        return new ResponseEntity<>(job, HttpStatus.OK);
+                    }else
+                        job.setFullDescription(null);
+                }
+
+            }else {
+                return new ResponseEntity<>(job,HttpStatus.OK);
             }
         }
             return ResponseEntity.notFound().build();
@@ -162,20 +192,42 @@ public class JobsController {
                 String description;
                 if(job.getFullDescription()==null){
                     // Call Flask backend to fetch the description
-                    description = jobsService.fetchJobDescriptionFromFlask(url);
-                    if(description.length()<100){
+                    Job job1 = jobsService.fetchJobDescriptionFromFlask(url);
+                    if(job1==null ){
                         job.setFullDescription(null);
+                        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
                     }else {
-                        job.setFullDescription(description);
+                        if(job1.getFullDescription().length()>100) {
+                            String extractedReviews = NumberExtractor.extractNumber(job1.getReviews());
+                            if (extractedReviews != null) {
+                                job.setReviews(extractedReviews);
+                            }
+
+                            String extractedRating = NumberExtractor.extractNumber(job1.getRating());
+                            if (extractedRating != null) {
+                                job.setRating(extractedRating);
+                            }
+
+                            String extractedApplicants = NumberExtractor.extractNumber(job1.getApplicants());
+                            if (extractedApplicants != null) {
+                                job.setApplicants(extractedApplicants);
+                            }
+
+                            String extractedPostDate = NumberExtractor.extractNumber(job1.getPost_date());
+                            if (extractedPostDate!=null) {
+                                job.setPost_date(extractedPostDate);
+                            }
+
+                            job.setFullDescription(job1.getFullDescription());
+                            return new ResponseEntity<>(job, HttpStatus.OK);
+                        }else
+                            job.setFullDescription(null);
                     }
-//                    System.out.println("desc in controller: \n"+description);
+
                 }else {
-                    description= job.getFullDescription();
+                    return new ResponseEntity<>(job,HttpStatus.OK);
                 }
 
-                // Update the job description
-                job.setFullDescription(description);
-                return new ResponseEntity<>(job,HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
