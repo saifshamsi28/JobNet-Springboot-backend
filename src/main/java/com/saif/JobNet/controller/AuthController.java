@@ -7,6 +7,7 @@ import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,20 +33,29 @@ public class AuthController {
         return new ResponseEntity<>(new AuthResponse("User Registered Successfully",HttpStatus.CREATED.value()),HttpStatus.CREATED);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody UserLoginCredentials credentials) {
-        Optional<User> userOpt = userService.getUserByUserName(credentials.getUserNameOrEmail());
-        if(userOpt.isEmpty()){
-            userOpt=userService.getUserByEmail(credentials.getUserNameOrEmail());
-        }
+//    @PostMapping("/login")
+//    public ResponseEntity<?> loginUser(@RequestBody UserLoginCredentials credentials) {
+//        Optional<User> userOpt = userService.getUserByUserName(credentials.getUserNameOrEmail());
+//        if(userOpt.isEmpty()){
+//            userOpt=userService.getUserByEmail(credentials.getUserNameOrEmail());
+//        }
+//
+//        if (userOpt.isPresent()) {
+//            User user = userOpt.get();
+//            if (user.getPassword().equals(new BCryptPasswordEncoder(12).encode(credentials.getPassword()))) {
+//                return new ResponseEntity<>(user, HttpStatus.OK);
+//            }else {
+//                System.out.println("invalid credentials: email or UserName: "+credentials.getUserNameOrEmail());
+//                return new ResponseEntity<>(new AuthResponse("Invalid credentials", HttpStatus.UNAUTHORIZED.value()),HttpStatus.UNAUTHORIZED);
+//            }
+//        }else {
+//            return new ResponseEntity<>(new AuthResponse("user not found",HttpStatus.NOT_FOUND.value()),HttpStatus.NOT_FOUND);
+//        }
+//    }
 
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (user.getPassword().equals(credentials.getPassword())) {
-                return new ResponseEntity<>(user, HttpStatus.OK);
-            }
-        }
-        System.out.println("invalid credentials: email or UserName: "+credentials.getUserNameOrEmail());
-        return new ResponseEntity<>(new AuthResponse("Invalid credentials", HttpStatus.UNAUTHORIZED.value()),HttpStatus.UNAUTHORIZED);
+    @PostMapping("/login")
+    public String loginUser(@RequestBody UserLoginCredentials credentials) {
+        return userService.verify(credentials);
     }
+
 }
