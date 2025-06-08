@@ -1,4 +1,4 @@
-package com.saif.JobNet.model;
+package com.saif.JobNet.model.resume;
 
 import lombok.Data;
 

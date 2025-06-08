@@ -2,6 +2,9 @@ package com.saif.JobNet.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saif.JobNet.model.*;
+import com.saif.JobNet.model.resume.ParsedResumeDetails;
+import com.saif.JobNet.model.resume.Resume;
+import com.saif.JobNet.model.resume.ResumeResponseEntity;
 import com.saif.JobNet.repositories.JobsRepository;
 import com.saif.JobNet.services.ResumeParsingService;
 import com.saif.JobNet.services.SupabaseStorageService;

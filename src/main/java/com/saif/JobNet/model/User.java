@@ -3,6 +3,8 @@ package com.saif.JobNet.model;
 import com.saif.JobNet.model.education.Class10Details;
 import com.saif.JobNet.model.education.Class12Details;
 import com.saif.JobNet.model.education.GraduationDetails;
+import com.saif.JobNet.model.resume.ParsedResumeDetails;
+import com.saif.JobNet.model.resume.Resume;
 import lombok.Data;
 import lombok.NonNull;
 import org.springframework.data.annotation.Id;
