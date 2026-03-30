@@ -1,10 +1,10 @@
 HELP.md
 .env
 target/
+uploads/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-!target/*.jar
 
 ### STS ###
 .apt_generated
@@ -33,5 +33,4 @@ build/
 
 ### VS Code ###
 .vscode/
-src/main/resources/application.properties
 
