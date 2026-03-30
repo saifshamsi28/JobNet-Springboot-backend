@@ -3,6 +3,7 @@ package com.saif.JobNet.config;
 import com.saif.JobNet.model.MyUserDetails;
 import com.saif.JobNet.services.JWTService;
 import com.saif.JobNet.services.MyUserDetailsService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,18 +36,28 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if(authHeader!=null && authHeader.startsWith("Bearer ")){
             token=authHeader.substring(7);
-            username=jwtService.extractUserName(token);
+            try {
+                username=jwtService.extractUserName(token);
+            } catch (JwtException | IllegalArgumentException ex) {
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request,response);
+                return;
+            }
         }
 
         if(username!=null && SecurityContextHolder.getContext().getAuthentication()==null){
             UserDetails userDetails=context.getBean(MyUserDetailsService.class).loadUserByUsername(username);
 
-            if(jwtService.validateToken(token,userDetails)){
-                UsernamePasswordAuthenticationToken authToken
-                        =new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+            try {
+                if(jwtService.validateToken(token,userDetails)){
+                    UsernamePasswordAuthenticationToken authToken
+                            =new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } catch (JwtException | IllegalArgumentException ex) {
+                SecurityContextHolder.clearContext();
             }
         }
         filterChain.doFilter(request,response);

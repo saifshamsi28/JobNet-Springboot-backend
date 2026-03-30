@@ -6,11 +6,14 @@ import com.saif.JobNet.services.SupabaseStorageService;
 import com.saif.JobNet.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -24,11 +27,6 @@ public class UserController {
 
     @Autowired
     private JobsService jobsEntryService;
-
-    @GetMapping("all")
-    public ResponseEntity<List<User>> getAllUsers(){
-        return new ResponseEntity<>(userService.getAllUser(),HttpStatus.OK);
-    }
 
     @GetMapping("/{id}/profile")
     public ResponseEntity<?> getUserById(@PathVariable String id){
@@ -125,12 +123,32 @@ public class UserController {
     @PutMapping("/save-jobs")
     public ResponseEntity<?> saveJobForUser(@RequestBody SaveJobsModel saveJobsModel) {
 
+        if (saveJobsModel == null || saveJobsModel.getUserId() == null || saveJobsModel.getJobId() == null) {
+            return new ResponseEntity<>("Invalid save job request", HttpStatus.BAD_REQUEST);
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+
         Optional<User> userOptional = userService.getUserById(saveJobsModel.getUserId());
         Optional<Job> jobOptional = jobsEntryService.getJobById(saveJobsModel.getJobId());
 
         if (userOptional.isPresent() && jobOptional.isPresent()) {
             User user = userOptional.get();
             Job job = jobOptional.get();
+
+            String authenticatedIdentity = authentication.getName();
+            boolean sameUser = authenticatedIdentity.equalsIgnoreCase(user.getUserName())
+                    || authenticatedIdentity.equalsIgnoreCase(user.getEmail());
+            if (!sameUser) {
+                return new ResponseEntity<>("Forbidden", HttpStatus.FORBIDDEN);
+            }
+
+            if (user.getSavedJobs() == null) {
+                user.setSavedJobs(new ArrayList<>());
+            }
 
             // Resolve savedJobs if using DBRef
             user.getSavedJobs().size(); // Force lazy-loading
@@ -219,22 +237,40 @@ public class UserController {
     }
 
     @PatchMapping("/id/{id}/update-skills")
-    public JobNetResponse saveSkills(@PathVariable String id, @RequestBody List<String> skills) {
+    public ResponseEntity<JobNetResponse> saveSkills(@PathVariable String id, @RequestBody List<String> skills) {
         Optional<User> userBox = userService.getUserById(id);
         System.out.println("skills received: "+skills);
         if (userBox.isEmpty()) {
-            return new JobNetResponse("user not found", HttpStatus.NOT_FOUND.value());
-        } else {
-            User user = userBox.get();
-
-            // Set or update skills
-            user.setSkills(skills);
-
-            // Save updated user
-            userService.saveUser(user);
-
-            return new JobNetResponse("Skills saved successfully", HttpStatus.OK.value());
+            return new ResponseEntity<>(new JobNetResponse("user not found", HttpStatus.NOT_FOUND.value()), HttpStatus.NOT_FOUND);
         }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
+            return new ResponseEntity<>(new JobNetResponse("unauthorized", HttpStatus.UNAUTHORIZED.value()), HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userBox.get();
+        String authenticatedIdentity = authentication.getName();
+        boolean sameUser = authenticatedIdentity.equalsIgnoreCase(user.getUserName())
+                || authenticatedIdentity.equalsIgnoreCase(user.getEmail());
+
+        if (!sameUser) {
+            return new ResponseEntity<>(new JobNetResponse("forbidden", HttpStatus.FORBIDDEN.value()), HttpStatus.FORBIDDEN);
+        }
+
+        List<String> sanitizedSkills = (skills == null ? Collections.<String>emptyList() : skills)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .limit(100)
+                .collect(Collectors.toList());
+
+        user.setSkills(sanitizedSkills);
+        userService.saveUser(user);
+
+        return new ResponseEntity<>(new JobNetResponse("Skills saved successfully", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
 
