@@ -1,0 +1,17 @@
+.git
+.gitignore
+.idea
+.vscode
+
+# Local env and secrets
+.env
+*.env
+
+# Build output
+target
+
+# Runtime uploads / temp
+uploads
+
+# Docs and misc
+HELP.md
