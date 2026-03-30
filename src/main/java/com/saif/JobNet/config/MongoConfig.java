@@ -1,5 +1,6 @@
 package com.saif.JobNet.config;
 
+import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClients;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,9 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     @Override
     @NonNull
     protected String getDatabaseName() {
-        return "JobNetDatabaseFirstCluster";
+        ConnectionString connectionString = new ConnectionString(mongoUri);
+        String dbName = connectionString.getDatabase();
+        return (dbName == null || dbName.isBlank()) ? "jobnet" : dbName;
     }
 
     @Override
@@ -30,7 +33,6 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
 
     @Bean
     public MongoTemplate mongoTemplate() {
-        System.out.println("mongo uri: "+mongoUri);
         return new MongoTemplate(mongoClient(), getDatabaseName());
     }
 }

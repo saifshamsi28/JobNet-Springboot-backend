@@ -151,7 +151,6 @@ public class ResumeController {
             throw new RuntimeException(e);
         }
 
-
         if (!finalFile.delete()) {
             System.err.println("Warning: Could not delete merged file: " + finalFile.getAbsolutePath());
         }

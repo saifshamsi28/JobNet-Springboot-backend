@@ -4,10 +4,17 @@ import com.saif.JobNet.NumberExtractor;
 import com.saif.JobNet.exception_handling.JobNotFoundException;
 import com.saif.JobNet.model.Job;
 import com.saif.JobNet.model.JobUpdateDTO;
+import com.saif.JobNet.model.RecruiterJobCreateRequest;
+import com.saif.JobNet.model.User;
+import com.saif.JobNet.model.UserRole;
+import com.saif.JobNet.services.JWTService;
+import com.saif.JobNet.services.UserService;
 import com.saif.JobNet.services.JobsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -18,16 +25,57 @@ public class JobsController {
     @Autowired
     JobsService jobsService;
 
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    JWTService jwtService;
+
+    @PostMapping("/recruiter/jobs")
+    public ResponseEntity<?> createRecruiterJob(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                                @RequestBody RecruiterJobCreateRequest request) {
+        Optional<User> authenticatedUser = resolveAuthenticatedUser(authHeader);
+        if (authenticatedUser.isEmpty()) {
+            return new ResponseEntity<>(Map.of("error", "Unauthorized"), HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = authenticatedUser.get();
+        if (user.getRole() != UserRole.RECRUITER) {
+            return new ResponseEntity<>(Map.of("error", "Only recruiters can post jobs"), HttpStatus.FORBIDDEN);
+        }
+
+        return jobsService.createRecruiterJob(user, request)
+                .<ResponseEntity<?>>map(job -> new ResponseEntity<>(job, HttpStatus.CREATED))
+                .orElseGet(() -> new ResponseEntity<>(Map.of("error", "Invalid job payload"), HttpStatus.BAD_REQUEST));
+    }
+
+    @GetMapping("/recruiter/jobs/me")
+    public ResponseEntity<?> myPostedJobs(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        Optional<User> authenticatedUser = resolveAuthenticatedUser(authHeader);
+        if (authenticatedUser.isEmpty()) {
+            return new ResponseEntity<>(Map.of("error", "Unauthorized"), HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = authenticatedUser.get();
+        if (user.getRole() != UserRole.RECRUITER) {
+            return new ResponseEntity<>(Map.of("error", "Only recruiters can view recruiter jobs"), HttpStatus.FORBIDDEN);
+        }
+
+        return new ResponseEntity<>(jobsService.getJobsPostedByRecruiter(user.getId()), HttpStatus.OK);
+    }
+
     @GetMapping("/suggested-jobs")
     public List<Job> getSuggestedJobs(){
-        System.out.println("sending suggested jobs");
-        return jobsService.getAllJobs().subList(0,10);
+        List<Job> jobs = new ArrayList<>(jobsService.getAllJobs());
+        jobs.sort(Comparator.comparing(Job::getDateTime, Comparator.nullsLast(Comparator.reverseOrder())));
+        return jobs.stream().limit(10).toList();
     }
 
     @GetMapping("/recent-jobs")
     public List<Job> getRecent(){
-        System.out.println("sending recent jobs");
-        return jobsService.getAllJobs().subList(0,10);
+        List<Job> jobs = new ArrayList<>(jobsService.getAllJobs());
+        jobs.sort(Comparator.comparing(Job::getDateTime, Comparator.nullsLast(Comparator.reverseOrder())));
+        return jobs.stream().limit(10).toList();
     }
 
     @GetMapping("/new-jobs")
@@ -252,5 +300,24 @@ public class JobsController {
         else {
             return new ResponseEntity<>(job,HttpStatus.NOT_IMPLEMENTED);
         }
+    }
+
+    private Optional<User> resolveAuthenticatedUser(String authHeader) {
+        if (authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                String identity = jwtService.extractUserName(token);
+                Optional<User> userByToken = userService.getUserByIdentity(identity);
+                if (userByToken.isPresent()) {
+                    return userByToken;
+                }
+            } catch (Exception ignored) {
+                // Fallback to SecurityContext below.
+            }
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String identity = authentication == null ? null : authentication.getName();
+        return userService.getUserByIdentity(identity);
     }
 }
