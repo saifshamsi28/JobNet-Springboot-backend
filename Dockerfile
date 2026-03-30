@@ -4,9 +4,6 @@ WORKDIR /workspace
 
 # Copy pom first to maximize layer caching
 COPY pom.xml ./
-COPY .mvn .mvn
-COPY mvnw mvnw
-COPY mvnw.cmd mvnw.cmd
 
 # Download dependencies before copying sources
 RUN mvn -q -DskipTests dependency:go-offline
