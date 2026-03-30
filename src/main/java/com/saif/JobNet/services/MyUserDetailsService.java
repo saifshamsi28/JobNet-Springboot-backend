@@ -19,10 +19,10 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        Optional<User> userBox=userRepository.getUserByUserName(usernameOrEmail);
+        Optional<User> userBox = userRepository.getUserByUserNameIgnoreCase(usernameOrEmail == null ? "" : usernameOrEmail.trim());
 
         if(userBox.isEmpty()){
-            userBox=userRepository.getUserByEmail(usernameOrEmail);
+            userBox = userRepository.getUserByEmailIgnoreCase(usernameOrEmail == null ? "" : usernameOrEmail.trim());
             if(userBox.isEmpty()) {
                 System.err.println("User not found");
                 throw new UsernameNotFoundException("User not found");

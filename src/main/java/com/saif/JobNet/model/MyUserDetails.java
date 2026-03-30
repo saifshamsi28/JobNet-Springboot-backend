@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 
 public class MyUserDetails implements UserDetails {
 
@@ -16,7 +17,9 @@ public class MyUserDetails implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
+        UserRole role = user.getRole() == null ? UserRole.JOB_SEEKER : user.getRole();
+        String authority = "ROLE_" + role.name().toUpperCase(Locale.ROOT);
+        return Collections.singleton(new SimpleGrantedAuthority(authority));
     }
 
     @Override

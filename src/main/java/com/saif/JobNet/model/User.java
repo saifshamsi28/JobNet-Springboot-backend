@@ -1,5 +1,7 @@
 package com.saif.JobNet.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.saif.JobNet.model.education.Class10Details;
 import com.saif.JobNet.model.education.Class12Details;
 import com.saif.JobNet.model.education.GraduationDetails;
@@ -32,6 +34,11 @@ public class User {
     private String email;
     @NonNull
     private String password;
+
+    @JsonProperty("role")
+    @JsonAlias({"userRole", "accountType"})
+    private UserRole role = UserRole.JOB_SEEKER;
+
     private String profileImage;
     private String phoneNumber;
     private Resume resume;
