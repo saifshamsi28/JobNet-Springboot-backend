@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -30,6 +32,14 @@ public class JobsController {
 
     @Autowired
     JWTService jwtService;
+
+    @GetMapping("/health")
+    public ResponseEntity<?> healthCheck(){
+        Map<String,Object> map = new HashMap<>();
+        map.put("status","ok");
+        map.put("timestamp", LocalDateTime.now().toString());
+        return new ResponseEntity<>(map,HttpStatus.OK);
+    }
 
     @PostMapping("/recruiter/jobs")
     public ResponseEntity<?> createRecruiterJob(@RequestHeader(value = "Authorization", required = false) String authHeader,
